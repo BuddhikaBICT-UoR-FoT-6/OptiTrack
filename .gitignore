@@ -1,0 +1,41 @@
+# ===========================
+# OptiTrack — Root .gitignore
+# ===========================
+
+# ---- Backend (Java / Maven) ----
+optitrack-backend/target/
+optitrack-backend/.mvn/wrapper/maven-wrapper.jar
+optitrack-backend/*.class
+optitrack-backend/*.jar
+optitrack-backend/*.war
+optitrack-backend/.idea/
+optitrack-backend/*.iml
+optitrack-backend/.classpath
+optitrack-backend/.project
+optitrack-backend/.settings/
+
+# ---- Frontend (Node / Vite) ----
+optitrack-frontend/node_modules/
+optitrack-frontend/dist/
+optitrack-frontend/.env
+optitrack-frontend/.env.local
+optitrack-frontend/.env.*.local
+
+# ---- Environment & Secrets ----
+*.env
+.env
+application-local.yml
+application-secrets.yml
+secrets/
+
+# ---- OS & Editor ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- Logs ----
+*.log
+logs/
