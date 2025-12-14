@@ -50,12 +50,30 @@ public class DataInitializer implements CommandLineRunner {
         System.out.println("DEBUG: Admin password has been forced to 'admin123'");
 
         if (vehicleRepository.count() == 0) {
-            vehicleRepository.save(new Vehicle(null, "TRK-001", "Freightliner Cascadia", "VIN123456789",
-                    VehicleStatus.ACTIVE, null, null));
-            vehicleRepository.save(
-                    new Vehicle(null, "TRK-002", "Volvo VNL 860", "VIN987654321", VehicleStatus.ACTIVE, null, null));
-            vehicleRepository.save(new Vehicle(null, "TRK-003", "Peterbilt 579", "VIN456789123",
-                    VehicleStatus.MAINTENANCE, null, null));
+            vehicleRepository.save(Vehicle.builder()
+                    .licensePlate("TRK-001")
+                    .make("Freightliner")
+                    .model("Cascadia")
+                    .year(2022)
+                    .status(VehicleStatus.ACTIVE)
+                    .build());
+            
+            vehicleRepository.save(Vehicle.builder()
+                    .licensePlate("TRK-002")
+                    .make("Volvo")
+                    .model("VNL 860")
+                    .year(2023)
+                    .status(VehicleStatus.ACTIVE)
+                    .build());
+            
+            vehicleRepository.save(Vehicle.builder()
+                    .licensePlate("TRK-003")
+                    .make("Peterbilt")
+                    .model("579")
+                    .year(2021)
+                    .status(VehicleStatus.MAINTENANCE)
+                    .build());
+            
             System.out.println("Seeded 3 Sample Vehicles.");
         }
     }
