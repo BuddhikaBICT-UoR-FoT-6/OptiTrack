@@ -41,4 +41,9 @@ public interface TelemetryEventRepository extends JpaRepository<TelemetryEvent, 
             DriverProfile driverProfile,
             LocalDateTime startTime,
             LocalDateTime endTime);
+
+    /**
+     * Fetches all telemetry events for a vehicle, ordered by the most recent first.
+     */
+    List<TelemetryEvent> findByVehicleIdOrderByRecordedAtDesc(Long vehicleId);
 }
