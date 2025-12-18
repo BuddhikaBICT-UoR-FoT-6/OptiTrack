@@ -12,13 +12,6 @@ import java.time.LocalDateTime;
 
 /**
  * Purpose: Extends a User account with fleet-operational data.
- * Decouples driver-specific fields (license, assigned vehicle)
- * from the core identity (username, password) in the User entity.
- *
- * Design Note: One-to-One with User ensures every driver account
- * has exactly one operational profile. One-to-One with Vehicle
- * enforces the business rule that a vehicle can only have one
- * active driver at a time.
  */
 @Entity
 @Table(name = "driver_profiles")
@@ -32,19 +25,27 @@ public class DriverProfile {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // One driver profile belongs to exactly one User account
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
-
-    // A driver is assigned to one vehicle at a time (nullable = unassigned)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_id", unique = true)
-    private Vehicle assignedVehicle;
+    @NotBlank
+    @Column(nullable = false)
+    private String fullName;
 
     @NotBlank
     @Column(nullable = false, unique = true)
     private String licenseNumber;
+
+    @Column(nullable = false)
+    private Integer experienceYears;
+
+    @Column(nullable = false)
+    private Double averageScore;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id", unique = true)
+    private Vehicle assignedVehicle;
 
     @Column(nullable = false)
     @Builder.Default
