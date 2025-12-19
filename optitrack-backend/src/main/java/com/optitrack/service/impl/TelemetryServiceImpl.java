@@ -6,6 +6,7 @@ import com.optitrack.service.TelemetryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -15,7 +16,6 @@ public class TelemetryServiceImpl implements TelemetryService {
 
     @Override
     public TelemetryEvent recordEvent(TelemetryEvent event) {
-        // Logic to process the event (e.g., check for speeding) can go here
         return telemetryRepository.save(event);
     }
 
@@ -26,6 +26,11 @@ public class TelemetryServiceImpl implements TelemetryService {
 
     @Override
     public List<TelemetryEvent> getLatestEvents() {
-        return telemetryRepository.findAll(); // In production, we'd limit this
+        return telemetryRepository.findAll();
+    }
+
+    @Override
+    public Optional<TelemetryEvent> getLatestEvent(Long vehicleId) {
+        return telemetryRepository.findFirstByVehicleIdOrderByRecordedAtDesc(vehicleId);
     }
 }

@@ -24,4 +24,11 @@ public class TelemetryController {
     public ResponseEntity<List<TelemetryEvent>> getVehicleTelemetry(@PathVariable Long vehicleId) {
         return ResponseEntity.ok(telemetryService.getEventsByVehicle(vehicleId));
     }
+
+    @GetMapping("/latest/{vehicleId}")
+    public ResponseEntity<TelemetryEvent> getLatestTelemetry(@PathVariable Long vehicleId) {
+        return telemetryService.getLatestEvent(vehicleId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
