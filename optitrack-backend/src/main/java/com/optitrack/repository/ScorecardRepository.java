@@ -28,7 +28,13 @@ public interface ScorecardRepository extends JpaRepository<Scorecard, Long> {
      */
     List<Scorecard> findByDriverProfileOrderByPeriodDateDesc(DriverProfile driverProfile);
 
+    /**
+     * Retrieves the full scorecard history for a driver by ID, ordered by generation date.
+     */
     List<Scorecard> findByDriverProfileIdOrderByGeneratedAtDesc(Long driverId);
 
+    /**
+     * Retrieves the most recent scorecard for a driver by ID.
+     */
     Optional<Scorecard> findFirstByDriverProfileIdOrderByGeneratedAtDesc(Long driverId);
 }
