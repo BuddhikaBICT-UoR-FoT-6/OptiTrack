@@ -2,12 +2,137 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  background-color: #f8fafc;
+@layer base {
+  body {
+    @apply bg-[#0f172a] text-slate-200 antialiased selection:bg-blue-500/30;
+  }
+
+  /* Manual Animation Definitions */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slide-in-from-top {
+    from { transform: translateY(-1rem); }
+    to { transform: translateY(0); }
+  }
+
+  .animate-in {
+    animation-duration: 700ms;
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .fade-in {
+    animation-name: fade-in;
+  }
+
+  .slide-in-from-top-4 {
+    animation-name: slide-in-from-top;
+  }
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
+@layer components {
+  /* Layout Components */
+  .ot-page-container {
+    @apply flex-1 ml-64 p-8 min-h-screen transition-all duration-300;
+  }
+
+  .ot-header {
+    @apply mb-10 animate-in fade-in slide-in-from-top-4;
+  }
+
+  .ot-title {
+    @apply text-3xl font-bold text-white mb-2 tracking-tight;
+  }
+
+  .ot-subtitle {
+    @apply text-slate-400 text-base font-normal;
+  }
+
+  /* Card Components */
+  .ot-card {
+    @apply bg-[#1e293b]/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 transition-all duration-300 hover:border-slate-700/50 hover:shadow-2xl hover:shadow-blue-500/5;
+  }
+
+  .ot-stat-card {
+    @apply ot-card flex flex-col justify-between;
+  }
+
+  .ot-stat-icon-container {
+    @apply p-3 rounded-2xl bg-opacity-10 transition-transform duration-300;
+  }
+
+  .ot-stat-value {
+    @apply text-2xl font-bold text-white tracking-tight;
+  }
+
+  .ot-stat-label {
+    @apply text-slate-400 text-sm font-medium mb-1;
+  }
+
+  .ot-badge-live {
+    @apply text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/50;
+  }
+
+  /* Button & Action Components */
+  .ot-btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-blue-600/20 active:scale-95;
+  }
+
+  .ot-btn-secondary {
+    @apply bg-slate-800 hover:bg-slate-700 text-slate-300 px-6 py-2.5 rounded-xl font-medium transition-all;
+  }
+
+  /* Sidebar Components */
+  .ot-sidebar {
+    @apply fixed left-0 top-0 h-screen w-64 bg-[#0f172a] border-r border-slate-800/50 flex flex-col z-50;
+  }
+
+  .ot-nav-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium;
+  }
+
+  .ot-nav-link-active {
+    @apply bg-blue-600 text-white shadow-lg shadow-blue-600/30;
+  }
+
+  .ot-nav-link-inactive {
+    @apply text-slate-400 hover:bg-slate-800/50 hover:text-white;
+  }
+
+  /* Table Components */
+  .ot-table-container {
+    @apply bg-[#1e293b]/50 backdrop-blur-md border border-slate-800 rounded-3xl overflow-hidden shadow-xl;
+  }
+
+  .ot-table {
+    @apply w-full text-left border-collapse;
+  }
+
+  .ot-table-header {
+    @apply bg-slate-800/30 text-slate-400 text-[11px] font-bold uppercase tracking-[0.15em] border-b border-slate-700/50;
+  }
+
+  .ot-table-row {
+    @apply border-b border-slate-700/30 last:border-0 hover:bg-slate-800/20 transition-colors;
+  }
+
+  /* Status Badges */
+  .ot-status-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border;
+  }
+
+  .ot-status-active {
+    @apply text-emerald-400 bg-emerald-400/10 border-emerald-400/20;
+  }
+
+  .ot-status-maintenance {
+    @apply text-amber-400 bg-amber-400/10 border-amber-400/20;
+  }
+
+  .ot-status-inactive {
+    @apply text-slate-400 bg-slate-400/10 border-slate-400/20;
+  }
 }
