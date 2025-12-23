@@ -22,6 +22,15 @@ public class ScorecardController {
 
     @GetMapping("/driver/{driverId}/latest")
     public ResponseEntity<Scorecard> getLatestScorecard(@PathVariable Long driverId) {
-        return ResponseEntity.ok(scorecardService.getLatestScorecard(driverId));
+        Scorecard latest = scorecardService.getLatestScorecard(driverId);
+        return latest != null ? ResponseEntity.ok(latest) : ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Triggers a fresh AI analysis and generates a new scorecard for the driver.
+     */
+    @PostMapping("/generate/{driverId}")
+    public ResponseEntity<Scorecard> generateScorecard(@PathVariable Long driverId) {
+        return ResponseEntity.ok(scorecardService.generateScorecard(driverId));
     }
 }

@@ -16,29 +16,23 @@ import java.util.Optional;
 @Repository
 public interface TelemetryEventRepository extends JpaRepository<TelemetryEvent, Long> {
 
-    /**
-     * Fetches all sensor events for a vehicle within a time window.
-     */
     List<TelemetryEvent> findByVehicleAndRecordedAtBetween(
             Vehicle vehicle,
             LocalDateTime startTime,
             LocalDateTime endTime);
 
-    /**
-     * Fetches all events for a specific driver within a time window.
-     */
     List<TelemetryEvent> findByDriverProfileAndRecordedAtBetween(
             DriverProfile driverProfile,
             LocalDateTime startTime,
             LocalDateTime endTime);
 
-    /**
-     * Fetches all telemetry events for a vehicle ID, ordered by the most recent first.
-     */
     List<TelemetryEvent> findByVehicleIdOrderByRecordedAtDesc(Long vehicleId);
 
-    /**
-     * Fetches the absolute latest telemetry record for a vehicle ID.
-     */
     Optional<TelemetryEvent> findFirstByVehicleIdOrderByRecordedAtDesc(Long vehicleId);
+
+    /**
+     * Fetches telemetry events for a specific driver, ordered by most recent first.
+     * Essential for AI performance analysis.
+     */
+    List<TelemetryEvent> findByDriverProfileIdOrderByRecordedAtDesc(Long driverId);
 }

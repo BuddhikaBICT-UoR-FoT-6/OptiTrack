@@ -114,32 +114,68 @@ const Safety = () => {
                                 </div>
 
                                 {driver.scorecard && (
-                                    <div className="mt-8 pt-8 border-t border-slate-800/50 grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="flex items-center gap-4 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
-                                            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
-                                                <AlertTriangle size={20} />
+                                    <div className="mt-8 pt-8 border-t border-slate-800/50">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                            <div className="flex items-center gap-4 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
+                                                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+                                                    <AlertTriangle size={20} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-slate-500 uppercase font-bold">Harsh Braking</p>
+                                                    <p className="text-white font-bold">{driver.scorecard.harshBrakingCount || 0} Alerts</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="text-[10px] text-slate-500 uppercase font-bold">Harsh Braking</p>
-                                                <p className="text-white font-bold">{driver.scorecard.harshBrakingCount} Alerts</p>
+                                            <div className="flex items-center gap-4 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
+                                                <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
+                                                    <ShieldAlert size={20} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-slate-500 uppercase font-bold">Speeding</p>
+                                                    <p className="text-white font-bold">{driver.scorecard.speedingCount || 0} Violations</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
+                                                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                                                    <TrendingUp size={20} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] text-slate-500 uppercase font-bold">Efficiency</p>
+                                                    <p className="text-white font-bold">{driver.scorecard.efficiencyRating} <span className="text-slate-500 font-normal">/ 10</span></p>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-4 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
-                                            <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-500">
-                                                <ShieldAlert size={20} />
+
+                                        {/* AI Insights Section */}
+                                        <div className="p-6 bg-blue-600/5 border border-blue-500/20 rounded-3xl relative overflow-hidden group/ai">
+                                            <div className="absolute -top-12 -right-12 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl group-hover/ai:bg-blue-500/20 transition-all duration-700"></div>
+                                            
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                                    <Activity size={16} className="text-white" />
+                                                </div>
+                                                <h4 className="text-white font-bold tracking-tight">AI Performance Analyst</h4>
+                                                <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">Gemini 1.5 Flash</span>
                                             </div>
-                                            <div>
-                                                <p className="text-[10px] text-slate-500 uppercase font-bold">Speeding</p>
-                                                <p className="text-white font-bold">{driver.scorecard.speedingCount} Violations</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-4 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
-                                            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                                <TrendingUp size={20} />
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] text-slate-500 uppercase font-bold">Improvement</p>
-                                                <p className="text-white font-bold">+12% vs LY</p>
+                                            
+                                            <div className="relative z-10">
+                                                <p className="text-slate-300 text-sm leading-relaxed italic mb-4">
+                                                    "{driver.scorecard.aiRecommendations || "Analysis pending. Trigger a new safety audit to generate AI insights."}"
+                                                </p>
+                                                <div className="flex justify-end">
+                                                    <button 
+                                                        className="text-[11px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1.5 transition-colors"
+                                                        onClick={async () => {
+                                                            try {
+                                                                await api.post(`/scorecards/generate/${driver.id}`);
+                                                                window.location.reload(); // Refresh to show new analysis
+                                                            } catch (err) {
+                                                                console.error("Analysis generation failed", err);
+                                                            }
+                                                        }}
+                                                    >
+                                                        Run AI Audit <ChevronRight size={14} />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
