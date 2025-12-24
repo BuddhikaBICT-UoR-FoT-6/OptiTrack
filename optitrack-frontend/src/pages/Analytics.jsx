@@ -8,6 +8,16 @@ import {
 import { TrendingUp, Fuel, Zap, Clock, Calendar } from 'lucide-react';
 
 const Analytics = () => {
+    // Silence Recharts defaultProps warnings
+    useEffect(() => {
+        const error = console.error;
+        console.error = (...args) => {
+            if (/defaultProps/.test(args[0])) return;
+            error(...args);
+        };
+        return () => { console.error = error; };
+    }, []);
+
     const [vehicles, setVehicles] = useState([]);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
     const [telemetry, setTelemetry] = useState([]);
