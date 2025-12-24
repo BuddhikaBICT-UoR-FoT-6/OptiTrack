@@ -14,7 +14,7 @@ const Safety = () => {
                 const driverList = res.data;
                 
                 const scorecardPromises = driverList.map(d => 
-                    api.get(`/api/scorecards/latest/${d.id}`).catch(() => null)
+                    api.get(`/scorecards/latest/${d.id}`).catch(() => null)
                 );
                 
                 const results = await Promise.all(scorecardPromises);
