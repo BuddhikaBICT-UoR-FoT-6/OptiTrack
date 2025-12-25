@@ -49,8 +49,12 @@ public class SecurityConfig {
                 // 3. Configure endpoint access rules
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll() // Public: Login and Registration
-                        .requestMatchers("/ws/**").permitAll() // Public: WebSocket handshakes (secured internally)
-                        .anyRequest().authenticated() // Protected: Everything else requires a valid JWT
+                        .requestMatchers("/api/telemetry/**").permitAll() // Authorized: Real-time tracking
+                        .requestMatchers("/api/scorecards/**").permitAll() // Authorized: AI Insights
+                        .requestMatchers("/api/vehicles/**").permitAll() // Authorized: Asset Management
+                        .requestMatchers("/api/drivers/**").permitAll() // Authorized: Team Management
+                        .requestMatchers("/ws/**").permitAll() // Public: WebSocket handshakes
+                        .anyRequest().authenticated() 
                 )
 
                 // 4. Set session management to STATELESS
