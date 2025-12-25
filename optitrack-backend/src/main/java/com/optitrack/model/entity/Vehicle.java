@@ -59,4 +59,9 @@ public class Vehicle {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Builder.Default
+    private Boolean maintenanceDue = false;
+
+    private LocalDateTime lastMaintenanceAt;
 }

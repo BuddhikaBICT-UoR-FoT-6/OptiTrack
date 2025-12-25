@@ -47,11 +47,19 @@ const Safety = () => {
                 <header className="ot-header flex justify-between items-center">
                     <div>
                         <h1 className="ot-title">Safety & Compliance</h1>
-                        <p className="ot-subtitle">Monitor driver behavior and system safety scorecards</p>
+                        <p className="ot-subtitle">AI-driven risk analysis and driver safety scorecards</p>
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
-                        <ShieldCheck className="text-emerald-500" size={18} />
-                        <span className="text-emerald-500 font-bold text-xs">Fleet Status: Secure</span>
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => window.print()}
+                            className="ot-btn-secondary flex items-center gap-2"
+                        >
+                            <ShieldCheck size={18} /> Download Report
+                        </button>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                            <ShieldCheck className="text-emerald-500" size={18} />
+                            <span className="text-emerald-500 font-bold text-xs">Fleet Status: Secure</span>
+                        </div>
                     </div>
                 </header>
 

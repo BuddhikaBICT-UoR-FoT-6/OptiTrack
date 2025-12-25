@@ -85,6 +85,34 @@
     @apply bg-slate-800 hover:bg-slate-700 text-slate-300 px-6 py-2.5 rounded-xl font-medium transition-all;
   }
 
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-600;
+  }
+
+  @media print {
+    .ot-sidebar, .ot-btn-primary, .ot-btn-secondary, .ot-badge-live, button {
+      display: none !important;
+    }
+    .ot-page-container {
+      padding: 0 !important;
+      margin: 0 !important;
+      background: white !important;
+    }
+    .ot-card {
+      background: white !important;
+      border: 1px solid #e2e8f0 !important;
+      color: black !important;
+      break-inside: avoid;
+      box-shadow: none !important;
+    }
+    .ot-title, .ot-subtitle, h3, h4, p, span {
+      color: black !important;
+    }
+    body {
+      background: white !important;
+    }
+  }
+
   /* Sidebar Components */
   .ot-sidebar {
     @apply fixed left-0 top-0 h-screen w-64 bg-[#0f172a] border-r border-slate-800/50 flex flex-col z-50;

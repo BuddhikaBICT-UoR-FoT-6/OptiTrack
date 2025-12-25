@@ -96,16 +96,30 @@ const Fleet = () => {
                                         <td className="px-6 py-4 text-slate-300 font-mono text-sm">{vehicle.licensePlate}</td>
                                         <td className="px-6 py-4 text-slate-400">{vehicle.year}</td>
                                         <td className="px-6 py-4">
-                                            <span className={`ot-status-badge ${getStatusClass(vehicle.status)}`}>
-                                                {vehicle.status === 'ACTIVE' && <CheckCircle2 size={12} />}
-                                                {vehicle.status === 'MAINTENANCE' && <Clock size={12} />}
-                                                {vehicle.status}
-                                            </span>
+                                            <div className="flex flex-col gap-1.5">
+                                                <span className={`ot-status-badge ${getStatusClass(vehicle.status)}`}>
+                                                    {vehicle.status === 'ACTIVE' && <CheckCircle2 size={12} />}
+                                                    {vehicle.status === 'MAINTENANCE' && <Clock size={12} />}
+                                                    {vehicle.status}
+                                                </span>
+                                                {vehicle.maintenanceDue && (
+                                                    <span className="text-[9px] font-black bg-rose-500/10 text-rose-500 px-2 py-0.5 rounded-full border border-rose-500/20 uppercase tracking-tighter animate-pulse">
+                                                        Service Required
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="p-2 text-slate-600 hover:text-white transition-colors">
-                                                <MoreVertical size={18} />
-                                            </button>
+                                            <div className="flex justify-end gap-2">
+                                                {vehicle.maintenanceDue && (
+                                                    <button className="px-3 py-1.5 bg-rose-500 text-white text-[10px] font-bold rounded-lg shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-all">
+                                                        Schedule
+                                                    </button>
+                                                )}
+                                                <button className="p-2 text-slate-600 hover:text-white transition-colors">
+                                                    <MoreVertical size={18} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
