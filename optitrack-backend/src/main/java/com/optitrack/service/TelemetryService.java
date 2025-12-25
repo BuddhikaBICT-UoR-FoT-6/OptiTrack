@@ -12,4 +12,6 @@ public interface TelemetryService {
     List<TelemetryEvent> getLatestEvents();
 
     Optional<TelemetryEvent> getLatestEvent(Long vehicleId);
+
+    List<TelemetryEvent> getRecentIncidents();
 }

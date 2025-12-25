@@ -31,4 +31,13 @@ public class TelemetryController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    /**
+     * Fetches the most recent incidents (Harsh Braking) across the entire fleet.
+     * Used by the Alert Engine for real-time notifications.
+     */
+    @GetMapping("/incidents/recent")
+    public ResponseEntity<List<TelemetryEvent>> getRecentIncidents() {
+        return ResponseEntity.ok(telemetryService.getRecentIncidents());
+    }
 }

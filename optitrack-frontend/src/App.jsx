@@ -7,6 +7,7 @@ import Drivers from './pages/Drivers';
 import Tracking from './pages/Tracking';
 import Analytics from './pages/Analytics';
 import Safety from './pages/Safety';
+import AlertListener from './components/AlertListener';
 import useAuthStore from './store/useAuthStore';
 
 const App = () => {
@@ -14,6 +15,7 @@ const App = () => {
 
   return (
     <Router>
+      <AlertListener />
       <Routes>
         <Route
           path="/login"

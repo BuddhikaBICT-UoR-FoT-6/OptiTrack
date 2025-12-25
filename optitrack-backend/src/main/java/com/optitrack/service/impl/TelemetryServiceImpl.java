@@ -33,4 +33,13 @@ public class TelemetryServiceImpl implements TelemetryService {
     public Optional<TelemetryEvent> getLatestEvent(Long vehicleId) {
         return telemetryRepository.findFirstByVehicleIdOrderByRecordedAtDesc(vehicleId);
     }
+
+    @Override
+    public List<TelemetryEvent> getRecentIncidents() {
+        // Return incidents from the last 1 minute (for polling)
+        LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
+        return telemetryRepository.findAll().stream()
+                .filter(e -> e.getIsHarshBraking() && e.getRecordedAt().isAfter(oneMinuteAgo))
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

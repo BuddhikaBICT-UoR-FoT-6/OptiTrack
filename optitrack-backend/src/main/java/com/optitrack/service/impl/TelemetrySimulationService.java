@@ -34,11 +34,16 @@ public class TelemetrySimulationService {
         if (vehicles.isEmpty()) return;
 
         for (Vehicle vehicle : vehicles) {
-            double latOffset = (random.nextDouble() - 0.5) * 0.01;
-            double lonOffset = (random.nextDouble() - 0.5) * 0.01;
+            // 1. Simulate Movement & Random Incidents
+            double latOffset = (random.nextDouble() - 0.5) * 0.005;
+            double lonOffset = (random.nextDouble() - 0.5) * 0.005;
             
-            double speed = 40 + random.nextDouble() * 40;
-            double fuel = 20 + random.nextDouble() * 80;
+            double speed = 40 + random.nextDouble() * 60;
+            boolean isHarshBraking = random.nextDouble() < 0.1; // 10% chance
+            if (isHarshBraking) speed = 5.0; // Sudden stop simulation
+
+            // 2. Simulate Fuel Consumption
+            double fuel = 15 + random.nextDouble() * 85; 
 
             TelemetryEvent event = TelemetryEvent.builder()
                     .vehicle(vehicle)
@@ -46,11 +51,15 @@ public class TelemetrySimulationService {
                     .gpsLongitude(BASE_LON + lonOffset)
                     .speedKph(speed)
                     .fuelLevel(fuel)
+                    .isHarshBraking(isHarshBraking)
                     .recordedAt(LocalDateTime.now())
                     .build();
 
             telemetryRepository.save(event);
-            log.debug("Simulated telemetry for vehicle {}: {} kph", vehicle.getLicensePlate(), String.format("%.1f", speed));
+            
+            if (isHarshBraking) {
+                log.warn("⚠️ INCIDENT: Harsh Braking detected for unit {}", vehicle.getLicensePlate());
+            }
         }
     }
 }
