@@ -88,7 +88,7 @@ public class DataInitializer implements CommandLineRunner {
             return driverRepository.save(newProfile);
         });
 
-        if (scorecardRepository.count() == 0) {
+        if (scorecardRepository.findByDriverProfileId(profile.getId()).isEmpty()) {
             scorecardRepository.save(Scorecard.builder()
                     .driverProfile(profile)
                     .periodDate(LocalDate.now())
@@ -97,6 +97,7 @@ public class DataInitializer implements CommandLineRunner {
                     .aiRecommendations("Maintain consistent speed and reduce idle time.")
                     .generatedAt(LocalDateTime.now())
                     .build());
+            System.out.println("Seeded Scorecard for driver: " + fullName);
         }
     }
 }

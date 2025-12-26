@@ -57,6 +57,8 @@ public class TelemetrySimulationService {
 
             telemetryRepository.save(event);
             
+            log.info("📡 HEARTBEAT: Telemetry recorded for unit {} | Speed: {} kph", vehicle.getLicensePlate(), String.format("%.1f", speed));
+
             if (isHarshBraking) {
                 log.warn("⚠️ INCIDENT: Harsh Braking detected for unit {}", vehicle.getLicensePlate());
             }
