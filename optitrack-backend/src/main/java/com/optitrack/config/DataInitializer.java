@@ -88,7 +88,7 @@ public class DataInitializer implements CommandLineRunner {
             return driverRepository.save(newProfile);
         });
 
-        if (scorecardRepository.findByDriverProfileId(profile.getId()).isEmpty()) {
+        if (scorecardRepository.findFirstByDriverProfileIdOrderByGeneratedAtDesc(profile.getId()).isEmpty()) {
             scorecardRepository.save(Scorecard.builder()
                     .driverProfile(profile)
                     .periodDate(LocalDate.now())
