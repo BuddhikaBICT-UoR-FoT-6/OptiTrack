@@ -40,4 +40,17 @@ public class TelemetryController {
     public ResponseEntity<List<TelemetryEvent>> getRecentIncidents() {
         return ResponseEntity.ok(telemetryService.getRecentIncidents());
     }
+
+    /**
+     * System Health Check: Returns counts of all core entities.
+     */
+    @GetMapping("/system/status")
+    public ResponseEntity<java.util.Map<String, Long>> getSystemStatus() {
+        java.util.Map<String, Long> status = new java.util.HashMap<>();
+        status.put("vehicles", telemetryService.getVehicleCount());
+        status.put("drivers", telemetryService.getDriverCount());
+        status.put("scorecards", telemetryService.getScorecardCount());
+        status.put("telemetryEvents", telemetryService.getEventCount());
+        return ResponseEntity.ok(status);
+    }
 }

@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 public class TelemetryServiceImpl implements TelemetryService {
 
     private final TelemetryEventRepository telemetryRepository;
+    private final com.optitrack.repository.VehicleRepository vehicleRepository;
+    private final com.optitrack.repository.DriverProfileRepository driverRepository;
+    private final com.optitrack.repository.ScorecardRepository scorecardRepository;
 
     @Override
     public TelemetryEvent recordEvent(TelemetryEvent event) {
@@ -43,4 +46,13 @@ public class TelemetryServiceImpl implements TelemetryService {
                 .filter(e -> e.getIsHarshBraking() && e.getRecordedAt().isAfter(oneMinuteAgo))
                 .collect(java.util.stream.Collectors.toList());
     }
+
+    @Override
+    public long getVehicleCount() { return vehicleRepository.count(); }
+    @Override
+    public long getDriverCount() { return driverRepository.count(); }
+    @Override
+    public long getScorecardCount() { return scorecardRepository.count(); }
+    @Override
+    public long getEventCount() { return telemetryRepository.count(); }
 }

@@ -38,6 +38,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        System.out.println("🚀 [OPTI-SEED] Initializing Core Fleet Data...");
         // 1. Seed Roles
         for (RoleName roleName : RoleName.values()) {
             if (roleRepository.findByName(roleName).isEmpty()) {
