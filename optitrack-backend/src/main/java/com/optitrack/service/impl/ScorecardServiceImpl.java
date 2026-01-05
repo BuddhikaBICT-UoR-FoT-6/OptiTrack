@@ -6,7 +6,7 @@ import com.optitrack.model.entity.TelemetryEvent;
 import com.optitrack.repository.DriverProfileRepository;
 import com.optitrack.repository.ScorecardRepository;
 import com.optitrack.repository.TelemetryEventRepository;
-import com.optitrack.service.GeminiService;
+import com.optitrack.ai.GeminiAnalyzer;
 import com.optitrack.service.ScorecardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ public class ScorecardServiceImpl implements ScorecardService {
     private final ScorecardRepository scorecardRepository;
     private final TelemetryEventRepository telemetryRepository;
     private final DriverProfileRepository driverRepository;
-    private final GeminiService geminiService;
+    private final GeminiAnalyzer geminiAnalyzer;
 
     @Override
     public Scorecard generateScorecard(Long driverId) {
@@ -42,7 +42,7 @@ public class ScorecardServiceImpl implements ScorecardService {
         double efficiencyScore = avgSpeed > 90 ? 7.0 : 9.0; // Over-speeding reduces efficiency
 
         // 3. Generate AI Recommendations
-        String recommendations = geminiService.generateRecommendations(events);
+        String recommendations = geminiAnalyzer.analyzePerformance(events);
 
         // 4. Create and Save Scorecard
         Scorecard scorecard = Scorecard.builder()
