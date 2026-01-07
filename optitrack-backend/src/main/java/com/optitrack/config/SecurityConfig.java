@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/scorecards/**").permitAll() // Authorized: AI Insights
                         .requestMatchers("/api/vehicles/**").permitAll() // Authorized: Asset Management
                         .requestMatchers("/api/drivers/**").permitAll() // Authorized: Team Management
+                        .requestMatchers("/api/simulation/**").permitAll() // Authorized: Simulation endpoints
                         .requestMatchers("/ws/**").permitAll() // Public: WebSocket handshakes
                         .anyRequest().authenticated() 
                 )
