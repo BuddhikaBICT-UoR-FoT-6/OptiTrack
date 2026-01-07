@@ -65,12 +65,10 @@ public class DataInitializer implements CommandLineRunner {
                     .status(VehicleStatus.ACTIVE).build());
         }
 
-        // 4. Seed Drivers
-        if (driverRepository.count() == 0) {
-            seedDriverWithScorecard("johndoe", "John Doe", "john@optitrack.com", "DL-12345", 10, 9.2);
-            seedDriverWithScorecard("janesmith", "Jane Smith", "jane@optitrack.com", "DL-67890", 5, 8.8);
-            System.out.println("Seeded Core Fleet Data and Safety Scorecards.");
-        }
+        // 4. Seed Drivers & Scorecards
+        seedDriverWithScorecard("johndoe", "John Doe", "john@optitrack.com", "DL-12345", 10, 9.2);
+        seedDriverWithScorecard("janesmith", "Jane Smith", "jane@optitrack.com", "DL-67890", 5, 8.8);
+        System.out.println("🚀 [OPTI-SEED] Fleet Data and Safety Scorecards Verified.");
     }
 
     private void seedDriverWithScorecard(String username, String fullName, String email, String dl, int exp, double score) {
