@@ -35,8 +35,9 @@ public class TelemetryController {
 
     /**
      * Force Pulse: Manually triggers a simulation heartbeat.
+     * Supports both GET and POST for maximum flexibility during troubleshooting.
      */
-    @PostMapping("/simulation/force-pulse")
+    @RequestMapping(value = "/simulation/force-pulse", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<String> forcePulse() {
         simulationService.triggerSimulation();
         return ResponseEntity.ok("🔥 [OPTI-SIM] Manual heartbeat pulse successful!");
