@@ -14,6 +14,7 @@ import java.util.List;
 public class TelemetryController {
 
     private final TelemetryService telemetryService;
+    private final com.optitrack.service.impl.TelemetrySimulationService simulationService;
 
     @PostMapping("/record")
     public ResponseEntity<TelemetryEvent> recordEvent(@RequestBody TelemetryEvent event) {
@@ -30,6 +31,15 @@ public class TelemetryController {
         return telemetryService.getLatestEvent(vehicleId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Force Pulse: Manually triggers a simulation heartbeat.
+     */
+    @PostMapping("/simulation/force-pulse")
+    public ResponseEntity<String> forcePulse() {
+        simulationService.triggerSimulation();
+        return ResponseEntity.ok("🔥 [OPTI-SIM] Manual heartbeat pulse successful!");
     }
 
     /**

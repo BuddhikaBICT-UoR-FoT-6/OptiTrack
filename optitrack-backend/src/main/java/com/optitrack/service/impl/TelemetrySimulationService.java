@@ -30,8 +30,16 @@ public class TelemetrySimulationService {
 
     @Scheduled(fixedRate = 5000)
     public void simulateFleetActivity() {
+        log.info("🔥 [OPTI-SIM] Ignition! Heartbeat cycle starting...");
+        triggerSimulation();
+    }
+
+    public void triggerSimulation() {
         List<Vehicle> vehicles = vehicleRepository.findAll();
-        if (vehicles.isEmpty()) return;
+        if (vehicles.isEmpty()) {
+            log.warn("⚠️ [OPTI-SIM] No vehicles found for simulation!");
+            return;
+        }
 
         for (Vehicle vehicle : vehicles) {
             // 1. Simulate Movement & Random Incidents
