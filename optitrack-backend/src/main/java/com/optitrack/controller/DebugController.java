@@ -21,7 +21,12 @@ public class DebugController {
 
     @GetMapping("/force-pulse")
     public ResponseEntity<String> forcePulse() {
-        simulationService.triggerSimulation();
-        return ResponseEntity.ok("🔥 [OPTI-DEBUG] Debug pulse successful!");
+        try {
+            simulationService.triggerSimulation();
+            return ResponseEntity.ok("🔥 [OPTI-DEBUG] Debug pulse successful!");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("❌ [OPTI-DEBUG] Internal Error: " + e.getMessage() + 
+                "\nType: " + e.getClass().getName());
+        }
     }
 }
