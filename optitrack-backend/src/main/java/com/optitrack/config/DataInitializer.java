@@ -65,13 +65,14 @@ public class DataInitializer implements CommandLineRunner {
                     .status(VehicleStatus.ACTIVE).build());
         }
 
-        // 4. Seed Drivers & Scorecards
-        seedDriverWithScorecard("johndoe", "John Doe", "john@optitrack.com", "DL-12345", 10, 9.2);
-        seedDriverWithScorecard("janesmith", "Jane Smith", "jane@optitrack.com", "DL-67890", 5, 8.8);
-        System.out.println("🚀 [OPTI-SEED] Fleet Data and Safety Scorecards Verified.");
+        // 4. Seed Drivers & Scorecards & Assignments
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+        seedDriverWithScorecard("johndoe", "John Doe", "john@optitrack.com", "DL-12345", 10, 9.2, vehicles.get(0));
+        seedDriverWithScorecard("janesmith", "Jane Smith", "jane@optitrack.com", "DL-67890", 5, 8.8, vehicles.get(1));
+        System.out.println("🚀 [OPTI-SEED] Fleet Data, Assignments and Safety Scorecards Verified.");
     }
 
-    private void seedDriverWithScorecard(String username, String fullName, String email, String dl, int exp, double score) {
+    private void seedDriverWithScorecard(String username, String fullName, String email, String dl, int exp, double score, Vehicle assignedVehicle) {
         User user = userRepository.findByUsername(username).orElseGet(() -> {
             User newUser = new User();
             newUser.setUsername(username);
@@ -83,9 +84,22 @@ public class DataInitializer implements CommandLineRunner {
 
         DriverProfile profile = driverRepository.findByLicenseNumber(dl).orElseGet(() -> {
             DriverProfile newProfile = DriverProfile.builder()
-                    .user(user).fullName(fullName).licenseNumber(dl).experienceYears(exp).averageScore(score).totalHoursDriven(0.0).build();
+                    .user(user)
+                    .fullName(fullName)
+                    .licenseNumber(dl)
+                    .experienceYears(exp)
+                    .averageScore(score)
+                    .assignedVehicle(assignedVehicle)
+                    .totalHoursDriven(0.0)
+                    .build();
             return driverRepository.save(newProfile);
         });
+
+        // Ensure assignment is updated even if profile existed
+        if (profile.getAssignedVehicle() == null) {
+            profile.setAssignedVehicle(assignedVehicle);
+            profile = driverRepository.save(profile);
+        }
 
         if (scorecardRepository.findFirstByDriverProfileIdOrderByGeneratedAtDesc(profile.getId()).isEmpty()) {
             scorecardRepository.save(Scorecard.builder()

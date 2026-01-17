@@ -22,6 +22,7 @@ import java.util.Random;
 public class TelemetrySimulationService {
 
     private final VehicleRepository vehicleRepository;
+    private final com.optitrack.repository.DriverProfileRepository driverProfileRepository;
     private final TelemetryEventRepository telemetryRepository;
     private final Random random = new Random();
 
@@ -35,13 +36,16 @@ public class TelemetrySimulationService {
     }
 
     public void triggerSimulation() {
-        List<Vehicle> vehicles = vehicleRepository.findAll();
-        if (vehicles.isEmpty()) {
-            log.warn("⚠️ [OPTI-SIM] No vehicles found for simulation!");
+        List<com.optitrack.model.entity.DriverProfile> activeDrivers = driverProfileRepository.findAll();
+        if (activeDrivers.isEmpty()) {
+            log.warn("⚠️ [OPTI-SIM] No active driver assignments found for simulation!");
             return;
         }
 
-        for (Vehicle vehicle : vehicles) {
+        for (com.optitrack.model.entity.DriverProfile driver : activeDrivers) {
+            Vehicle vehicle = driver.getAssignedVehicle();
+            if (vehicle == null) continue;
+
             // 1. Simulate Movement & Random Incidents
             double latOffset = (random.nextDouble() - 0.5) * 0.005;
             double lonOffset = (random.nextDouble() - 0.5) * 0.005;
@@ -55,6 +59,7 @@ public class TelemetrySimulationService {
 
             TelemetryEvent event = TelemetryEvent.builder()
                     .vehicle(vehicle)
+                    .driverProfile(driver)
                     .gpsLatitude(BASE_LAT + latOffset)
                     .gpsLongitude(BASE_LON + lonOffset)
                     .speedKph(speed)
