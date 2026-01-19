@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Purpose: Automatically seeds the database with roles, users, vehicles, drivers, and scorecards.
