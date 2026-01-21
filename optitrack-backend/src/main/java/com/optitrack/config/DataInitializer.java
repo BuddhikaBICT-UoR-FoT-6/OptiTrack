@@ -70,6 +70,7 @@ public class DataInitializer implements CommandLineRunner {
         List<Vehicle> vehicles = vehicleRepository.findAll();
         seedDriverWithScorecard("johndoe", "John Doe", "john@optitrack.com", "DL-12345", 10, 9.2, vehicles.get(0));
         seedDriverWithScorecard("janesmith", "Jane Smith", "jane@optitrack.com", "DL-67890", 5, 8.8, vehicles.get(1));
+        seedDriverWithScorecard("mikejohnson", "Mike Johnson", "mike@optitrack.com", "DL-11223", 8, 9.0, vehicles.get(2));
         System.out.println("🚀 [OPTI-SEED] Fleet Data, Assignments and Safety Scorecards Verified.");
     }
 
