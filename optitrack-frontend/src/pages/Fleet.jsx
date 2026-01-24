@@ -1,25 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import axios from '../api/axios';
-import { Truck, Search, Plus, Filter, MoreVertical, CheckCircle2, Clock } from 'lucide-react';
+import { Truck, Search, Plus, Filter, Trash2, CheckCircle2, Clock } from 'lucide-react';
 
 const Fleet = () => {
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newVehicle, setNewVehicle] = useState({
+        licensePlate: '',
+        make: '',
+        model: '',
+        year: new Date().getFullYear(),
+        status: 'ACTIVE'
+    });
+
+    const fetchVehicles = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('/vehicles');
+            setVehicles(response.data);
+        } catch (error) {
+            console.error('Failed to fetch vehicles:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchVehicles = async () => {
-            try {
-                const response = await axios.get('/vehicles');
-                setVehicles(response.data);
-            } catch (error) {
-                console.error('Failed to fetch vehicles:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchVehicles();
     }, []);
+
+    const handleAddVehicle = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('/vehicles', newVehicle);
+            setShowAddModal(false);
+            setNewVehicle({ licensePlate: '', make: '', model: '', year: new Date().getFullYear(), status: 'ACTIVE' });
+            fetchVehicles();
+        } catch (error) {
+            console.error('Failed to add vehicle:', error);
+            alert('Failed to add vehicle. Please check if license plate is unique.');
+        }
+    };
+
+    const handleDeleteVehicle = async (id) => {
+        if (!window.confirm('Are you sure you want to decommission this vehicle?')) return;
+        try {
+            await axios.delete(`/vehicles/${id}`);
+            fetchVehicles();
+        } catch (error) {
+            console.error('Failed to delete vehicle:', error);
+            alert('Failed to delete vehicle. It may have associated telemetry data.');
+        }
+    };
 
     const getStatusClass = (status) => {
         switch (status) {
@@ -39,7 +73,10 @@ const Fleet = () => {
                         <h1 className="ot-title">Fleet Management</h1>
                         <p className="ot-subtitle">Manage and monitor your connected assets</p>
                     </div>
-                    <button className="ot-btn-primary flex items-center gap-2">
+                    <button 
+                        onClick={() => setShowAddModal(true)}
+                        className="ot-btn-primary flex items-center gap-2"
+                    >
                         <Plus size={18} /> Add Vehicle
                     </button>
                 </header>
@@ -116,8 +153,12 @@ const Fleet = () => {
                                                         Schedule
                                                     </button>
                                                 )}
-                                                <button className="p-2 text-slate-600 hover:text-white transition-colors">
-                                                    <MoreVertical size={18} />
+                                                <button 
+                                                    onClick={() => handleDeleteVehicle(vehicle.id)}
+                                                    className="p-2 text-slate-600 hover:text-rose-500 transition-colors"
+                                                    title="Decommission Vehicle"
+                                                >
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
                                         </td>
@@ -127,6 +168,86 @@ const Fleet = () => {
                         </table>
                     </div>
                 </div>
+
+                {/* Add Vehicle Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="ot-card w-full max-w-lg shadow-2xl shadow-blue-500/10 border-blue-500/20 scale-in-center">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-white tracking-tight">Register New Asset</h2>
+                                <button onClick={() => setShowAddModal(false)} className="text-slate-500 hover:text-white transition-colors">
+                                    <Plus className="rotate-45" size={24} />
+                                </button>
+                            </div>
+                            
+                            <form onSubmit={handleAddVehicle} className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">License Plate</label>
+                                        <input 
+                                            required
+                                            type="text"
+                                            value={newVehicle.licensePlate}
+                                            onChange={(e) => setNewVehicle({...newVehicle, licensePlate: e.target.value.toUpperCase()})}
+                                            placeholder="e.g. TRK-789"
+                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Manufacture Year</label>
+                                        <input 
+                                            required
+                                            type="number"
+                                            value={newVehicle.year}
+                                            onChange={(e) => setNewVehicle({...newVehicle, year: parseInt(e.target.value)})}
+                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Make / Manufacturer</label>
+                                    <input 
+                                        required
+                                        type="text"
+                                        value={newVehicle.make}
+                                        onChange={(e) => setNewVehicle({...newVehicle, make: e.target.value})}
+                                        placeholder="e.g. Volvo"
+                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Model Name</label>
+                                    <input 
+                                        required
+                                        type="text"
+                                        value={newVehicle.model}
+                                        onChange={(e) => setNewVehicle({...newVehicle, model: e.target.value})}
+                                        placeholder="e.g. FH16 750"
+                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                    />
+                                </div>
+
+                                <div className="pt-4 flex gap-3">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowAddModal(false)}
+                                        className="flex-1 ot-btn-secondary py-3"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        className="flex-1 ot-btn-primary py-3"
+                                    >
+                                        Complete Registration
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );

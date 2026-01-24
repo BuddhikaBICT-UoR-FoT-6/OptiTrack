@@ -11,4 +11,5 @@ public interface DriverService {
     DriverProfile getDriverById(Long id);
 
     DriverProfile updateDriverStatus(Long id, String status);
+    void deleteDriver(Long id);
 }

@@ -6,20 +6,52 @@ import { Users, Search, Plus, UserCheck, Star, Award, MoreVertical, ShieldCheck 
 const Drivers = () => {
     const [drivers, setDrivers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [newDriver, setNewDriver] = useState({
+        fullName: '',
+        licenseNumber: '',
+        experienceYears: 0,
+        averageScore: 10.0,
+        totalHoursDriven: 0.0
+    });
+
+    const fetchDrivers = async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('/drivers');
+            setDrivers(response.data);
+        } catch (error) {
+            console.error('Failed to fetch drivers:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchDrivers = async () => {
-            try {
-                const response = await axios.get('/drivers');
-                setDrivers(response.data);
-            } catch (error) {
-                console.error('Failed to fetch drivers:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchDrivers();
     }, []);
+
+    const handleAddDriver = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('/drivers', newDriver);
+            setShowAddModal(false);
+            setNewDriver({ fullName: '', licenseNumber: '', experienceYears: 0, averageScore: 10.0, totalHoursDriven: 0.0 });
+            fetchDrivers();
+        } catch (error) {
+            console.error('Failed to add driver:', error);
+        }
+    };
+
+    const handleDeleteDriver = async (id) => {
+        if (!window.confirm('Are you sure you want to remove this driver profile?')) return;
+        try {
+            await axios.delete(`/drivers/${id}`);
+            fetchDrivers();
+        } catch (error) {
+            console.error('Failed to delete driver:', error);
+        }
+    };
 
     const getScoreColor = (score) => {
         if (score >= 9.0) return 'text-emerald-400';
@@ -37,7 +69,10 @@ const Drivers = () => {
                         <h1 className="ot-title">Driver Management</h1>
                         <p className="ot-subtitle">Monitor performance and safety metrics for your crew</p>
                     </div>
-                    <button className="ot-btn-primary flex items-center gap-2">
+                    <button 
+                        onClick={() => setShowAddModal(true)}
+                        className="ot-btn-primary flex items-center gap-2"
+                    >
                         <Plus size={18} /> Add Driver
                     </button>
                 </header>
@@ -62,7 +97,11 @@ const Drivers = () => {
                                         <p className="text-slate-500 text-sm font-mono">{driver.licenseNumber}</p>
                                     </div>
                                 </div>
-                                <button className="p-2 text-slate-600 hover:text-white transition-colors">
+                                <button 
+                                    onClick={() => handleDeleteDriver(driver.id)}
+                                    className="p-2 text-slate-600 hover:text-rose-500 transition-colors"
+                                    title="Delete Driver Profile"
+                                >
                                     <MoreVertical size={20} />
                                 </button>
                             </div>
@@ -103,6 +142,74 @@ const Drivers = () => {
                         </div>
                     ))}
                 </div>
+
+                {/* Add Driver Modal */}
+                {showAddModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="ot-card w-full max-w-lg shadow-2xl shadow-blue-500/10 border-blue-500/20 scale-in-center">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-white tracking-tight">Onboard New Operator</h2>
+                                <button onClick={() => setShowAddModal(false)} className="text-slate-500 hover:text-white transition-colors">
+                                    <Plus className="rotate-45" size={24} />
+                                </button>
+                            </div>
+                            
+                            <form onSubmit={handleAddDriver} className="space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Full Legal Name</label>
+                                    <input 
+                                        required
+                                        type="text"
+                                        value={newDriver.fullName}
+                                        onChange={(e) => setNewDriver({...newDriver, fullName: e.target.value})}
+                                        placeholder="e.g. Mike Johnson"
+                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">License Number</label>
+                                        <input 
+                                            required
+                                            type="text"
+                                            value={newDriver.licenseNumber}
+                                            onChange={(e) => setNewDriver({...newDriver, licenseNumber: e.target.value.toUpperCase()})}
+                                            placeholder="DL-XXXXX"
+                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Exp. Years</label>
+                                        <input 
+                                            required
+                                            type="number"
+                                            value={newDriver.experienceYears}
+                                            onChange={(e) => setNewDriver({...newDriver, experienceYears: parseInt(e.target.value)})}
+                                            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex gap-3">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setShowAddModal(false)}
+                                        className="flex-1 ot-btn-secondary py-3"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        className="flex-1 ot-btn-primary py-3"
+                                    >
+                                        Add to Roster
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );

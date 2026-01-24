@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { Truck, Activity, Users, AlertCircle } from 'lucide-react';
 import api from '../api/axios';
@@ -17,6 +18,7 @@ const StatCard = ({ icon, label, value, color }) => (
 );
 
 const Dashboard = () => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState({
         vehicles: 0,
         active: 0,
@@ -116,13 +118,22 @@ const Dashboard = () => {
                     <div className="ot-card flex flex-col">
                         <h3 className="text-white font-bold text-lg mb-6">Quick Actions</h3>
                         <div className="space-y-3">
-                            <button className="ot-btn-primary w-full">
+                            <button 
+                                onClick={() => navigate('/fleet')}
+                                className="ot-btn-primary w-full"
+                            >
                                 Register New Asset
                             </button>
-                            <button className="ot-btn-secondary w-full">
+                            <button 
+                                onClick={() => navigate('/safety')}
+                                className="ot-btn-secondary w-full"
+                            >
                                 Generate Safety Report
                             </button>
-                            <button className="ot-btn-secondary w-full">
+                            <button 
+                                onClick={() => navigate('/tracking')}
+                                className="ot-btn-secondary w-full"
+                            >
                                 View Fleet Map
                             </button>
                         </div>

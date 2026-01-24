@@ -24,4 +24,10 @@ public class DriverController {
     public ResponseEntity<DriverProfile> createDriver(@RequestBody DriverProfile driver) {
         return ResponseEntity.ok(driverService.createDriver(driver));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDriver(@PathVariable Long id) {
+        driverService.deleteDriver(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -35,4 +35,9 @@ public class DriverServiceImpl implements DriverService {
         // Add logic to update status if needed
         return driverRepository.save(driver);
     }
+
+    @Override
+    public void deleteDriver(Long id) {
+        driverRepository.deleteById(id);
+    }
 }
