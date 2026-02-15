@@ -5,7 +5,6 @@ import com.optitrack.model.entity.TelemetryEvent;
 import com.optitrack.model.entity.Vehicle;
 import com.optitrack.repository.DriverProfileRepository;
 import com.optitrack.repository.TelemetryEventRepository;
-import com.optitrack.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,7 +22,6 @@ import java.util.Random;
 @Slf4j
 public class TelemetrySimulationService {
 
-    private final VehicleRepository vehicleRepository;
     private final DriverProfileRepository driverProfileRepository;
     private final TelemetryEventRepository telemetryRepository;
     private final Random random = new Random();

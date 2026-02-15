@@ -26,7 +26,7 @@ public class GeminiAnalyzerImpl implements GeminiAnalyzer {
     @Override
     public String analyzePerformance(List<TelemetryEvent> events) {
         String prompt = buildAnalysisPrompt(events);
-        return callGemini(prompt);
+        return callGemini(prompt, events);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class GeminiAnalyzerImpl implements GeminiAnalyzer {
                 "Based on the following telemetry data, provide a 'Executive Summary', 'Risk Assessment', and 'Action Plan'. " +
                 "Maintain a formal, corporate tone suitable for fleet management stakeholders.\n\n" +
                 buildTelemetrySummary(events);
-        return callGemini(prompt);
+        return callGemini(prompt, events);
     }
 
     private String buildAnalysisPrompt(List<TelemetryEvent> events) {
@@ -53,7 +53,8 @@ public class GeminiAnalyzerImpl implements GeminiAnalyzer {
                 .collect(Collectors.joining("\n"));
     }
 
-    private String callGemini(String prompt) {
+    @SuppressWarnings("unchecked")
+    private String callGemini(String prompt, List<TelemetryEvent> events) {
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
                 Map.of("parts", List.of(Map.of("text", prompt)))
@@ -70,8 +71,8 @@ public class GeminiAnalyzerImpl implements GeminiAnalyzer {
             log.error("Gemini API Failure (Using Fallback Intelligence): {}", e.getMessage());
             
             // High-fidelity fallback logic for viva demonstration
-            long harshBrakes = events.stream().filter(TelemetryEvent::getIsHarshBraking).count();
-            double avgSpeed = events.stream().mapToDouble(TelemetryEvent::getSpeedKph).average().orElse(0.0);
+            long harshBrakes = (events != null) ? events.stream().filter(TelemetryEvent::getIsHarshBraking).count() : 0;
+            double avgSpeed = (events != null) ? events.stream().mapToDouble(TelemetryEvent::getSpeedKph).average().orElse(0.0) : 0.0;
             
             if (harshBrakes > 2) {
                 return "CRITICAL: High frequency of harsh braking detected. Recommended immediate coaching on following distance and predictive slowing. High risk of cargo damage.";
