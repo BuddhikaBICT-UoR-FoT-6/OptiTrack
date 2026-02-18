@@ -48,13 +48,13 @@ public class SecurityConfig {
 
                 // 3. Configure endpoint access rules
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Public: Login and Registration
-                        .requestMatchers("/api/telemetry/**").permitAll() // Authorized: Real-time tracking
-                        .requestMatchers("/api/scorecards/**").permitAll() // Authorized: AI Insights
-                        .requestMatchers("/api/vehicles/**").permitAll() // Authorized: Asset Management
-                        .requestMatchers("/api/drivers/**").permitAll() // Authorized: Team Management
-                        .requestMatchers("/api/simulation/**").permitAll() // Authorized: Simulation endpoints
-                        .requestMatchers("/api/debug/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/telemetry/**").permitAll()
+                        .requestMatchers("/api/scorecards/**").permitAll()
+                        .requestMatchers("/api/drivers/**").permitAll()
+                        .requestMatchers("/api/vehicles/**").permitAll()
+                        .requestMatchers("/api/deliveries/**").permitAll()
+                        .requestMatchers("/api/debug/**").permitAll() // Public: WebSocket handshakes
                         .requestMatchers("/ws/**").permitAll() // Public: WebSocket handshakes
                         .anyRequest().authenticated() 
                 )

@@ -26,8 +26,8 @@ public class TelemetrySimulationService {
     private final TelemetryEventRepository telemetryRepository;
     private final Random random = new Random();
 
-    private static final double BASE_LAT = 40.7128;
-    private static final double BASE_LON = -74.0060;
+    private static final double BASE_LAT = 7.8731;
+    private static final double BASE_LON = 80.7718;
 
     @Scheduled(fixedRate = 5000)
     public void simulateFleetActivity() {
@@ -35,6 +35,7 @@ public class TelemetrySimulationService {
         triggerSimulation();
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void triggerSimulation() {
         List<DriverProfile> activeDrivers = driverProfileRepository.findAll();
         if (activeDrivers.isEmpty()) {

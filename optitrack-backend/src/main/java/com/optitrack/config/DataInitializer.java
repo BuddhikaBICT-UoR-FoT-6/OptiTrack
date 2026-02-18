@@ -27,6 +27,7 @@ public class DataInitializer implements CommandLineRunner {
     private final VehicleRepository vehicleRepository;
     private final DriverProfileRepository driverRepository;
     private final ScorecardRepository scorecardRepository;
+    private final DeliveryRepository deliveryRepository;
 
     @Value("${app.admin.username}")
     private String adminUsername;
@@ -56,22 +57,39 @@ public class DataInitializer implements CommandLineRunner {
         userRepository.save(admin);
 
         // 3. Seed Vehicles
-        if (vehicleRepository.count() == 0) {
-            vehicleRepository.save(Vehicle.builder()
-                    .licensePlate("TRK-001").make("Freightliner").model("Cascadia").year(2022)
-                    .status(VehicleStatus.ACTIVE).build());
-            
-            vehicleRepository.save(Vehicle.builder()
-                    .licensePlate("TRK-002").make("Volvo").model("VNL 860").year(2023)
-                    .status(VehicleStatus.ACTIVE).build());
-        }
+        ensureVehicleExists("TRK-001", "Freightliner", "Cascadia", 2022);
+        ensureVehicleExists("TRK-002", "Volvo", "VNL 860", 2023);
+        ensureVehicleExists("TRK-003", "Kenworth", "T680", 2021);
 
         // 4. Seed Drivers & Scorecards & Assignments
         List<Vehicle> vehicles = vehicleRepository.findAll();
+        if (vehicles.size() < 3) {
+            System.err.println("❌ [OPTI-SEED] Critical Error: Fleet initialization incomplete. Found only " + vehicles.size() + " units.");
+            return;
+        }
         seedDriverWithScorecard("johndoe", "John Doe", "john@optitrack.com", "DL-12345", 10, 9.2, vehicles.get(0));
         seedDriverWithScorecard("janesmith", "Jane Smith", "jane@optitrack.com", "DL-67890", 5, 8.8, vehicles.get(1));
         seedDriverWithScorecard("mikejohnson", "Mike Johnson", "mike@optitrack.com", "DL-11223", 8, 9.0, vehicles.get(2));
-        System.out.println("🚀 [OPTI-SEED] Fleet Data, Assignments and Safety Scorecards Verified.");
+
+        // 5. Seed 12 Sri Lanka Logistics Locations
+        if (deliveryRepository.count() == 0) {
+            System.out.println("🚛 [OPTI-SEED] Mapping Sri Lanka Logistics Network...");
+            seedDelivery(vehicles.get(0), "Industrial Parts", "Kandy Engineering", "123 Peradeniya Rd, Kandy", Priority.HIGH, 7.2906, 80.6337);
+            seedDelivery(vehicles.get(0), "Medical Supplies", "Galle General Hospital", "Magalle, Galle", Priority.CRITICAL, 6.0535, 80.2210);
+            seedDelivery(vehicles.get(1), "Fresh Produce", "Jaffna Central Market", "Hospital Rd, Jaffna", Priority.MEDIUM, 9.6615, 80.0255);
+            seedDelivery(vehicles.get(1), "Electronics", "Unity Plaza", "Galle Rd, Colombo 04", Priority.HIGH, 6.8940, 79.8547);
+            seedDelivery(vehicles.get(2), "Apparel Batch", "Brandix Seeduwa", "Liyanagemulla, Seeduwa", Priority.MEDIUM, 7.1187, 79.8821);
+            seedDelivery(vehicles.get(2), "Office Stationery", "Durdans Hospital", "Alfred Place, Colombo 03", Priority.LOW, 6.9070, 79.8510);
+            
+            // Adding more to reach 12
+            seedDelivery(vehicles.get(0), "Spices Export", "Matale Plantation", "A9 Highway, Matale", Priority.MEDIUM, 7.4675, 80.6234);
+            seedDelivery(vehicles.get(1), "Cement Load", "Holcim Puttalam", "Puttalam Road", Priority.HIGH, 8.0326, 79.8250);
+            seedDelivery(vehicles.get(2), "Luxury Tea", "Nuwara Eliya Estate", "Grand Hotel Rd", Priority.HIGH, 6.9497, 80.7891);
+            seedDelivery(vehicles.get(0), "Hardware Kit", "Batticaloa Shop", "Main St, Batticaloa", Priority.LOW, 7.7303, 81.6747);
+            seedDelivery(vehicles.get(1), "Lubricants", "Trinco Port", "China Bay, Trincomalee", Priority.MEDIUM, 8.5756, 81.2405);
+            seedDelivery(vehicles.get(2), "Retail Stock", "Kurunegala Mall", "Negombo Rd", Priority.MEDIUM, 7.4818, 80.3609);
+        }
+        System.out.println("🚀 [OPTI-SEED] Fleet Data, Assignments and Sri Lanka Logistics verified.");
     }
 
     private void seedDriverWithScorecard(String username, String fullName, String email, String dl, int exp, double score, Vehicle assignedVehicle) {
@@ -114,5 +132,28 @@ public class DataInitializer implements CommandLineRunner {
                     .build());
             System.out.println("Seeded Scorecard for driver: " + fullName);
         }
+    }
+
+    private void ensureVehicleExists(String lp, String make, String model, int year) {
+        if (vehicleRepository.findByLicensePlate(lp).isEmpty()) {
+            vehicleRepository.save(Vehicle.builder()
+                    .licensePlate(lp).make(make).model(model).year(year)
+                    .status(VehicleStatus.ACTIVE).build());
+            System.out.println("Seeded vehicle: " + lp);
+        }
+    }
+
+    private void seedDelivery(Vehicle vehicle, String pkg, String owner, String addr, Priority priority, double lat, double lon) {
+        deliveryRepository.save(Delivery.builder()
+                .vehicle(vehicle)
+                .packageName(pkg)
+                .ownerName(owner)
+                .address(addr)
+                .priority(priority)
+                .isDelivered(false)
+                .destinationLat(lat)
+                .destinationLon(lon)
+                .assignedAt(LocalDateTime.now())
+                .build());
     }
 }
