@@ -54,6 +54,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/drivers/**").permitAll()
                         .requestMatchers("/api/vehicles/**").permitAll()
                         .requestMatchers("/api/deliveries/**").permitAll()
+                        .requestMatchers("/api/dispatcher/**").permitAll()
+                        .requestMatchers("/api/customer/**").permitAll()
+                        .requestMatchers("/api/performance/**").permitAll()
                         .requestMatchers("/api/debug/**").permitAll() // Public: WebSocket handshakes
                         .requestMatchers("/ws/**").permitAll() // Public: WebSocket handshakes
                         .anyRequest().authenticated() 

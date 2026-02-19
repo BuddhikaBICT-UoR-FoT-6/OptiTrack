@@ -39,6 +39,16 @@ public class DriverProfile {
     @Column(nullable = false)
     private Double averageScore;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Double totalHoursDriven = 0.0;
+
+    @Builder.Default
+    private Double baseSalary = 0.0;
+
+    @Builder.Default
+    private Double currentSalary = 0.0;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -46,10 +56,6 @@ public class DriverProfile {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id", unique = true)
     private Vehicle assignedVehicle;
-
-    @Column(nullable = false)
-    @Builder.Default
-    private Double totalHoursDriven = 0.0;
 
     @CreationTimestamp
     @Column(updatable = false)
