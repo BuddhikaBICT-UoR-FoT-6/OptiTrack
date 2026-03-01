@@ -7,6 +7,7 @@ import Drivers from './pages/Drivers';
 import Tracking from './pages/Tracking';
 import Analytics from './pages/Analytics';
 import Safety from './pages/Safety';
+import CustomerPortal from './pages/CustomerPortal';
 import AlertListener from './components/AlertListener';
 import useAuthStore from './store/useAuthStore';
 
@@ -22,7 +23,6 @@ const App = () => {
           element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />}
         />
 
-        {/* Dashboard is now live! */}
         <Route
           path="/dashboard"
           element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />}
@@ -53,7 +53,11 @@ const App = () => {
           element={isAuthenticated ? <Safety /> : <Navigate to="/login" />}
         />
 
-        {/* Redirect Root to Login */}
+        <Route
+          path="/customer"
+          element={isAuthenticated ? <CustomerPortal /> : <Navigate to="/login" />}
+        />
+
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
