@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 @Component
 @RequiredArgsConstructor
@@ -35,15 +36,20 @@ public class DataInitializer implements CommandLineRunner {
     @Value("${app.admin.email}")
     private String adminEmail;
 
+    private final Random random = new Random();
+
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("🚀 [OPTI-SEED] Initializing Core Fleet Data...");
+        System.out.println("🚀 [OPTI-SEED] Synchronizing Sri Lankan Logistics Values...");
+        
+        // 1. Roles
         for (RoleName roleName : RoleName.values()) {
             if (roleRepository.findByName(roleName).isEmpty()) {
                 roleRepository.save(new Role(null, roleName));
             }
         }
 
+        // 2. Admin
         User admin = userRepository.findByUsername(adminUsername).orElse(new User());
         admin.setUsername(adminUsername);
         admin.setEmail(adminEmail);
@@ -51,32 +57,79 @@ public class DataInitializer implements CommandLineRunner {
         admin.setRoles(Collections.singleton(roleRepository.findByName(RoleName.ROLE_ADMIN).get()));
         userRepository.save(admin);
 
-        ensureVehicleExists("TRK-001", "Freightliner", "Cascadia", 2022);
-        ensureVehicleExists("TRK-002", "Volvo", "VNL 860", 2023);
-        ensureVehicleExists("TRK-003", "Kenworth", "T680", 2021);
+        // 3. Mass Vehicle Seeding (25+)
+        String[] makes = {"Toyota", "Isuzu", "Mitsubishi", "Freightliner", "Volvo", "Hino", "Tata"};
+        String[] models = {"HiAce", "NPR", "Canter", "Cascadia", "VNL", "500 Series", "Prima"};
+        
+        if (vehicleRepository.count() < 25) {
+            for (int i = 1; i <= 30; i++) {
+                String lp = String.format("LP-%03d", i);
+                int typeIdx = random.nextInt(makes.length);
+                ensureVehicleExists(lp, makes[typeIdx], models[typeIdx], 2020 + random.nextInt(5));
+            }
+        }
 
         List<Vehicle> vehicles = vehicleRepository.findAll();
-        seedDriverWithScorecard("johndoe", "John Doe", "john@optitrack.com", "DL-12345", 10, 9.2, vehicles.get(0));
-        seedDriverWithScorecard("janesmith", "Jane Smith", "jane@optitrack.com", "DL-67890", 5, 8.8, vehicles.get(1));
-        seedDriverWithScorecard("mikejohnson", "Mike Johnson", "mike@optitrack.com", "DL-11223", 8, 9.0, vehicles.get(2));
 
-        if (deliveryRepository.count() == 0) {
-            System.out.println("🚛 [OPTI-SEED] Mapping Sri Lanka Logistics Network...");
-            seedDelivery(vehicles.get(0), "Industrial Parts", "Kandy Engineering", "123 Peradeniya Rd, Kandy", Priority.HIGH, 7.2906, 80.6337, true, 5.0, true, false, 45L);
-            seedDelivery(vehicles.get(0), "Medical Supplies", "Galle General Hospital", "Magalle, Galle", Priority.CRITICAL, 6.0535, 80.2210, true, 4.8, false, true, 120L);
-            seedDelivery(vehicles.get(1), "Fresh Produce", "Jaffna Central Market", "Hospital Rd, Jaffna", Priority.MEDIUM, 9.6615, 80.0255, true, 4.5, true, true, 300L);
-            seedDelivery(vehicles.get(1), "Electronics", "Unity Plaza", "Galle Rd, Colombo 04", Priority.HIGH, 6.8940, 79.8547, true, 5.0, false, false, 30L);
-            
-            seedDelivery(vehicles.get(2), "Apparel Batch", "Brandix Seeduwa", "Liyanagemulla, Seeduwa", Priority.MEDIUM, 7.1187, 79.8821, false, null, false, false, null);
-            seedDelivery(vehicles.get(2), "Office Stationery", "Durdans Hospital", "Alfred Place, Colombo 03", Priority.LOW, 6.9070, 79.8510, false, null, false, false, null);
-            seedDelivery(vehicles.get(0), "Spices Export", "Matale Plantation", "A9 Highway, Matale", Priority.MEDIUM, 7.4675, 80.6234, false, null, false, false, null);
-            seedDelivery(vehicles.get(1), "Cement Load", "Holcim Puttalam", "Puttalam Road", Priority.HIGH, 8.0326, 79.8250, false, null, false, false, null);
-            seedDelivery(vehicles.get(2), "Luxury Tea", "Nuwara Eliya Estate", "Grand Hotel Rd", Priority.HIGH, 6.9497, 80.7891, false, null, false, false, null);
-            seedDelivery(vehicles.get(0), "Hardware Kit", "Batticaloa Shop", "Main St, Batticaloa", Priority.LOW, 7.7303, 81.6747, false, null, false, false, null);
-            seedDelivery(vehicles.get(1), "Lubricants", "Trinco Port", "China Bay, Trincomalee", Priority.MEDIUM, 8.5756, 81.2405, false, null, false, false, null);
-            seedDelivery(vehicles.get(2), "Retail Stock", "Kurunegala Mall", "Negombo Rd", Priority.MEDIUM, 7.4818, 80.3609, false, null, false, false, null);
+        // 4. Mass Driver Seeding (22+)
+        String[] firstNames = {"Amal", "Buddhika", "Chaminda", "Dinesh", "Eran", "Fazeer", "Gayan", "Harsha", "Indika", "Jayantha", "Kasun", "Lahiru", "Mahesh", "Niroshan", "Oshada", "Pradeep", "Quasim", "Ruwan", "Saman", "Thushara", "Udaya", "Vikum"};
+        String[] lastNames = {"Perera", "Silva", "Fernando", "Jayawardena", "Wickramasinghe", "Rathnayake", "Gunawardena", "Rajapaksa", "Dassanayake", "Herath"};
+
+        if (driverRepository.count() < 20) {
+            for (int i = 0; i < 22; i++) {
+                String fname = firstNames[i];
+                String lname = lastNames[random.nextInt(lastNames.length)];
+                String username = fname.toLowerCase() + i;
+                String fullName = fname + " " + lname;
+                String email = username + "@optitrack.com";
+                String dl = String.format("DL-%05d", 10000 + i);
+                
+                Vehicle assigned = vehicles.stream()
+                        .filter(v -> driverRepository.findByAssignedVehicleId(v.getId()).isEmpty())
+                        .findFirst()
+                        .orElse(null);
+                
+                seedDriverWithScorecard(username, fullName, email, dl, 5 + random.nextInt(15), 7.5 + random.nextDouble() * 2.5, assigned);
+            }
         }
-        System.out.println("🚀 [OPTI-SEED] High-Fidelity Logistics Ecosystem Verified.");
+
+        // 5. Mass Delivery Seeding with SRI LANKAN Values
+        if (deliveryRepository.count() < 10) {
+            System.out.println("🚛 [OPTI-SEED] Mapping High-Fidelity Sri Lankan Logistics Network...");
+            
+            Object[][] srlHubs = {
+                {"Colombo Port", "12 Harbour Rd, Colombo 01", 6.9428, 79.8481},
+                {"Kandy Central", "88 Peradeniya Rd, Kandy", 7.2906, 80.6337},
+                {"Galle Fort", "Church St, Galle Fort", 6.0267, 80.2167},
+                {"Jaffna Market", "Hospital Rd, Jaffna", 9.6615, 80.0255},
+                {"Trinco Harbour", "China Bay, Trincomalee", 8.5756, 81.2405},
+                {"Kurunegala Hub", "Negombo Rd, Kurunegala", 7.4818, 80.3609},
+                {"Matara Terminal", "Main St, Matara", 5.9496, 80.5469},
+                {"Batticaloa Stn", "Bar Rd, Batticaloa", 7.7303, 81.6747},
+                {"N'Eliya Estate", "Grand Hotel Rd, Nuwara Eliya", 6.9497, 80.7891},
+                {"Dambulla Hub", "Matale Rd, Dambulla", 7.8731, 80.6517}
+            };
+
+            String[] cargo = {"Medical Vaccines", "Retail Electronics", "Industrial Tea", "Fresh Seafood", "Apparel Batch", "Luxury Spices", "Construction Cement", "Hardware Kits"};
+
+            for (int i = 0; i < 20; i++) {
+                Object[] hub = srlHubs[random.nextInt(srlHubs.length)];
+                Vehicle v = vehicles.get(random.nextInt(vehicles.size()));
+                
+                seedDelivery(
+                    v, 
+                    cargo[random.nextInt(cargo.length)], 
+                    (String)hub[0] + " Logistics", 
+                    (String)hub[1], 
+                    Priority.values()[random.nextInt(3)], 
+                    (double)hub[2] + (random.nextDouble() - 0.5) * 0.1, // Slight variance for realism
+                    (double)hub[3] + (random.nextDouble() - 0.5) * 0.1, 
+                    false, null, false, false, null
+                );
+            }
+        }
+
+        System.out.println("🚀 [OPTI-SEED] Sri Lankan Logistics Ecosystem Fully Synchronized.");
     }
 
     private void seedDriverWithScorecard(String username, String fullName, String email, String dl, int exp, double score, Vehicle assignedVehicle) {
@@ -96,17 +149,20 @@ public class DataInitializer implements CommandLineRunner {
                     .licenseNumber(dl)
                     .experienceYears(exp)
                     .averageScore(score)
-                    .baseSalary(55000.0)
-                    .currentSalary(55000.0)
+                    .baseSalary(45000.0 + random.nextInt(20000))
+                    .currentSalary(45000.0)
                     .assignedVehicle(assignedVehicle)
-                    .totalHoursDriven(120.0)
+                    .totalHoursDriven(100.0 + random.nextInt(500))
+                    .status("ACTIVE")
                     .build();
             return driverRepository.save(newProfile);
         });
 
-        if (profile.getAssignedVehicle() == null) {
-            profile.setAssignedVehicle(assignedVehicle);
-            profile = driverRepository.save(profile);
+        if (profile.getAssignedVehicle() == null && assignedVehicle != null) {
+            if (driverRepository.findByAssignedVehicleId(assignedVehicle.getId()).isEmpty()) {
+                profile.setAssignedVehicle(assignedVehicle);
+                profile = driverRepository.save(profile);
+            }
         }
 
         if (scorecardRepository.findFirstByDriverProfileIdOrderByGeneratedAtDesc(profile.getId()).isEmpty()) {
@@ -114,8 +170,8 @@ public class DataInitializer implements CommandLineRunner {
                     .driverProfile(profile)
                     .periodDate(LocalDate.now())
                     .safetyRating(score)
-                    .efficiencyRating(8.5)
-                    .aiRecommendations("Maintain consistent speed and reduce idle time.")
+                    .efficiencyRating(8.0 + random.nextDouble() * 2.0)
+                    .aiRecommendations("Maintain optimal fuel levels and reduce idle time in traffic zones.")
                     .generatedAt(LocalDateTime.now())
                     .build());
         }
@@ -125,7 +181,7 @@ public class DataInitializer implements CommandLineRunner {
         if (vehicleRepository.findByLicensePlate(lp).isEmpty()) {
             vehicleRepository.save(Vehicle.builder()
                     .licensePlate(lp).make(make).model(model).year(year)
-                    .status(VehicleStatus.ACTIVE).build());
+                    .status(random.nextBoolean() ? VehicleStatus.ACTIVE : VehicleStatus.INACTIVE).build());
         }
     }
 
@@ -146,7 +202,7 @@ public class DataInitializer implements CommandLineRunner {
                 .destinationLon(lon)
                 .assignedAt(LocalDateTime.now().minusDays(1))
                 .deliveredAt(delivered ? LocalDateTime.now() : null)
-                .qrCodeData("OPT-QR-" + pkg.toUpperCase().replace(" ", "-"))
+                .qrCodeData("OPT-QR-" + pkg.toUpperCase().replace(" ", "-") + "-" + random.nextInt(1000))
                 .build());
     }
 }
