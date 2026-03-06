@@ -22,6 +22,9 @@ public interface DriverProfileRepository extends JpaRepository<DriverProfile, Lo
      */
     Optional<DriverProfile> findByUserId(Long userId);
 
+    /** Finds the driver currently operating a specific vehicle. */
+    Optional<DriverProfile> findByAssignedVehicleId(Long vehicleId);
+
     /** Checks if a license number is already registered. */
     Boolean existsByLicenseNumber(String licenseNumber);
 }
