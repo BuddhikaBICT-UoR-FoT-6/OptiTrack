@@ -1,7 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import axios from '../api/axios';
-import { Users, Search, Plus, UserCheck, Star, Award, MoreVertical, ShieldCheck, Activity, Brain, DollarSign } from 'lucide-react';
+import {
+    Users,
+    Search,
+    Plus,
+    UserCheck,
+    Star,
+    Award,
+    Trash2,
+    ShieldCheck,
+    Activity,
+    Brain,
+    DollarSign,
+    Save,
+    X,
+    UserCircle,
+    Fingerprint,
+    Briefcase
+} from 'lucide-react';
+import DashcamSimulator from '../components/DashcamSimulator';
+import AIInsightsSidebar from '../components/AIInsightsSidebar';
 
 const Drivers = () => {
     const [drivers, setDrivers] = useState([]);
@@ -9,6 +28,7 @@ const Drivers = () => {
     const [showAddModal, setShowAddModal] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedDriver, setSelectedDriver] = useState(null);
+    const [selectedDriverForAI, setSelectedDriverForAI] = useState(null);
     const [aiInsight, setAiInsight] = useState('');
     const [isGeneratingAi, setIsGeneratingAi] = useState(false);
     const [evalReport, setEvalReport] = useState(null);
@@ -24,8 +44,9 @@ const Drivers = () => {
     const [editForm, setEditForm] = useState({
         id: null,
         fullName: '',
-        baseSalary: 0,
-        experienceYears: 0
+        licenseNumber: '',
+        experienceYears: 0,
+        baseSalary: 0
     });
 
     const fetchDrivers = async () => {
@@ -33,6 +54,10 @@ const Drivers = () => {
             setLoading(true);
             const response = await axios.get('/drivers');
             setDrivers(response.data);
+            // Set first driver as default selection for AI insights
+            if (response.data.length > 0 && !selectedDriverForAI) {
+                setSelectedDriverForAI(response.data[0]);
+            }
         } catch (error) {
             console.error('Failed to fetch drivers:', error);
         } finally {
@@ -61,8 +86,9 @@ const Drivers = () => {
         setEditForm({
             id: driver.id,
             fullName: driver.fullName,
-            baseSalary: driver.baseSalary || 50000,
-            experienceYears: driver.experienceYears
+            licenseNumber: driver.licenseNumber,
+            experienceYears: driver.experienceYears,
+            baseSalary: driver.baseSalary || 50000
         });
         setAiInsight('');
         setEvalReport(null);
@@ -72,9 +98,19 @@ const Drivers = () => {
     const handleUpdateDriver = async (e) => {
         e.preventDefault();
         try {
+            // Update Base Salary first if changed
             await axios.post(`/drivers/${editForm.id}/base-salary?amount=${editForm.baseSalary}`);
+
+            // Update other profile details
+            await axios.put(`/drivers/${editForm.id}`, {
+                fullName: editForm.fullName,
+                licenseNumber: editForm.licenseNumber,
+                experienceYears: editForm.experienceYears
+            });
+
             setIsEditModalOpen(false);
             fetchDrivers();
+            alert("Driver Profile Synchronized Successfully ✅");
         } catch (error) {
             console.error('Update failed:', error);
         }
@@ -88,7 +124,7 @@ const Drivers = () => {
             setAiInsight(res.data);
         } catch (error) {
             console.error('AI Insights failed:', error);
-            setAiInsight('Intelligence engine currently offline. Performance data remains cached.');
+            setAiInsight('Intelligence Engine Offline: Ensure GOOGLE_API_KEY is configured in application.properties for real-time career analysis.');
         } finally {
             setIsGeneratingAi(false);
         }
@@ -105,9 +141,10 @@ const Drivers = () => {
     };
 
     const handleDeleteDriver = async (id) => {
-        if (!window.confirm('Are you sure you want to remove this driver profile?')) return;
+        if (!window.confirm('CRITICAL: Are you sure you want to permanently decommission this driver profile? This action cannot be undone.')) return;
         try {
             await axios.delete(`/drivers/${id}`);
+            setIsEditModalOpen(false);
             fetchDrivers();
         } catch (error) {
             console.error('Failed to delete driver:', error);
@@ -132,7 +169,7 @@ const Drivers = () => {
                         </h1>
                         <p className="text-slate-400 mt-2">Monitor performance and safety metrics for your crew</p>
                     </div>
-                    <button 
+                    <button
                         onClick={() => setShowAddModal(true)}
                         className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"
                     >
@@ -143,7 +180,7 @@ const Drivers = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                     {loading ? (
                         <div className="col-span-full py-20 text-center text-slate-500">
-                             <div className="flex justify-center items-center gap-3">
+                            <div className="flex justify-center items-center gap-3">
                                 <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                                 Syncing driver profiles...
                             </div>
@@ -156,16 +193,17 @@ const Drivers = () => {
                                         <Users size={28} />
                                     </div>
                                     <div>
-                                        <h3 className="text-white font-bold text-lg">{driver.fullName}</h3>
-                                        <p className="text-slate-500 text-sm font-mono">{driver.licenseNumber}</p>
+                                        <h3 className="text-white font-bold text-lg group-hover:text-blue-400 transition-colors">{driver.fullName}</h3>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{driver.licenseNumber}</span>
+                                            {driver.assignedVehicle && (
+                                                <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded border border-blue-500/20 font-bold">
+                                                    {driver.assignedVehicle.licensePlate}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                                <button 
-                                    onClick={() => handleDeleteDriver(driver.id)}
-                                    className="p-2 text-slate-600 hover:text-rose-500 transition-colors"
-                                >
-                                    <MoreVertical size={20} />
-                                </button>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -180,7 +218,7 @@ const Drivers = () => {
                                     <p className="text-[10px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Safety Score</p>
                                     <div className={`flex items-center gap-2 font-bold ${getScoreColor(driver.averageScore)}`}>
                                         <Star size={14} fill="currentColor" />
-                                        {driver.averageScore} / 10
+                                        {driver.averageScore.toFixed(2)} / 10
                                     </div>
                                 </div>
                             </div>
@@ -198,137 +236,191 @@ const Drivers = () => {
                                 </div>
                             </div>
 
-                            <button 
+                            <button
                                 onClick={() => openEditModal(driver)}
                                 className="w-full mt-6 py-4 bg-white/5 hover:bg-blue-600 hover:text-white text-slate-400 rounded-2xl font-bold transition-all text-sm group-hover:shadow-lg group-hover:shadow-blue-600/10"
                             >
-                                View Full Profile & AI Insights
+                                Manage Profile & Insights
                             </button>
                         </div>
                     ))}
                 </div>
 
+                {/* AI-Powered Driver Safety & Fatigue Analysis */}
+                {selectedDriverForAI && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                        <div className="lg:col-span-2">
+                            <DashcamSimulator 
+                                driverId={selectedDriverForAI.id}
+                                driverName={selectedDriverForAI.fullName}
+                            />
+                        </div>
+                        <div className="">
+                            <AIInsightsSidebar 
+                                type="fatigue"
+                                entityId={selectedDriverForAI.id}
+                                entityName={selectedDriverForAI.fullName}
+                            />
+                        </div>
+                    </div>
+                )}
+
                 {/* Edit / Full Profile Modal */}
                 {isEditModalOpen && selectedDriver && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-                        <div className="bg-[#111114] w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-[32px] border border-white/10 shadow-2xl p-8 scale-in-center">
-                            <div className="flex justify-between items-center mb-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-blue-600/20 rounded-2xl flex items-center justify-center text-blue-400">
-                                        <ShieldCheck size={24} />
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-[#111114] w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-[40px] border border-white/10 shadow-2xl p-10 scale-in-center custom-scrollbar">
+                            <div className="flex justify-between items-center mb-10">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-16 h-16 bg-blue-600/20 rounded-3xl flex items-center justify-center text-blue-400 border border-blue-500/20 shadow-xl shadow-blue-600/10">
+                                        <UserCircle size={32} />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-bold">Driver Profile & Performance</h2>
-                                        <p className="text-slate-500 text-sm">Reviewing {selectedDriver.fullName}</p>
+                                        <h2 className="text-3xl font-bold tracking-tight text-white">Workforce Dossier</h2>
+                                        <p className="text-slate-500">Operational profile for {selectedDriver.fullName}</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setIsEditModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
-                                    <Plus size={32} className="rotate-45" />
+                                <button onClick={() => setIsEditModalOpen(false)} className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                                    <X size={28} />
                                 </button>
                             </div>
 
-                            <form onSubmit={handleUpdateDriver} className="space-y-8">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Base Salary (LKR)</label>
+                            <form onSubmit={handleUpdateDriver} className="space-y-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Full Legal Name</label>
                                         <div className="relative">
-                                            <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                                            <input 
-                                                type="number"
-                                                value={editForm.baseSalary}
-                                                onChange={(e) => setEditForm({...editForm, baseSalary: parseInt(e.target.value)})}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono"
+                                            <UserCircle className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                                            <input
+                                                type="text"
+                                                value={editForm.fullName}
+                                                onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                                             />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Experience Years</label>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">License Identifier</label>
                                         <div className="relative">
-                                            <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-                                            <input 
+                                            <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                                            <input
+                                                type="text"
+                                                value={editForm.licenseNumber}
+                                                onChange={(e) => setEditForm({ ...editForm, licenseNumber: e.target.value.toUpperCase() })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Base Monthly Salary (LKR)</label>
+                                        <div className="relative">
+                                            <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-500" size={18} />
+                                            <input
+                                                type="number"
+                                                value={editForm.baseSalary}
+                                                onChange={(e) => setEditForm({ ...editForm, baseSalary: parseInt(e.target.value) })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1">Field Experience (Years)</label>
+                                        <div className="relative">
+                                            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500" size={18} />
+                                            <input
                                                 type="number"
                                                 value={editForm.experienceYears}
-                                                onChange={(e) => setEditForm({...editForm, experienceYears: parseInt(e.target.value)})}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono"
+                                                onChange={(e) => setEditForm({ ...editForm, experienceYears: parseInt(e.target.value) })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-6">
+                                <div className="bg-white/[0.02] border border-white/5 rounded-[32px] p-8 space-y-8">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-bold flex items-center gap-2">
-                                            <Brain className="text-blue-400" size={20} />
+                                        <h3 className="text-xl font-bold flex items-center gap-3">
+                                            <Brain className="text-blue-400" size={24} />
                                             AI Performance Intelligence
                                         </h3>
-                                        <button 
+                                        <button
                                             type="button"
                                             onClick={() => generateAiInsights(selectedDriver.id)}
                                             disabled={isGeneratingAi}
-                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2"
+                                            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg shadow-blue-600/20"
                                         >
-                                            {isGeneratingAi ? 'Analyzing Metrics...' : 'Generate Insights'}
+                                            {isGeneratingAi ? 'Syncing Context...' : 'Sync AI Insight'}
                                         </button>
                                     </div>
 
                                     {aiInsight && (
-                                        <div className="bg-blue-600/10 border border-blue-500/20 rounded-2xl p-4 animate-in slide-in-from-top-2 duration-500">
+                                        <div className="bg-blue-600/10 border border-blue-500/20 rounded-2xl p-6 animate-in slide-in-from-top-2 duration-500">
                                             <p className="text-sm text-blue-100 leading-relaxed italic">
                                                 "{aiInsight}"
                                             </p>
                                         </div>
                                     )}
 
-                                    <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                                        <h3 className="text-lg font-bold flex items-center gap-2">
-                                            <Activity className="text-indigo-400" size={20} />
-                                            Merit-Based Evaluation
+                                    <div className="flex justify-between items-center pt-8 border-t border-white/5">
+                                        <h3 className="text-xl font-bold flex items-center gap-3">
+                                            <Activity className="text-indigo-400" size={24} />
+                                            Merit Evaluation Report
                                         </h3>
-                                        <button 
+                                        <button
                                             type="button"
                                             onClick={() => triggerEvaluation(selectedDriver.id)}
-                                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all"
+                                            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/20"
                                         >
-                                            Run Salary Review
+                                            Execute Salary Review
                                         </button>
                                     </div>
 
                                     {evalReport && (
-                                        <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-5 space-y-4">
-                                            <div className="grid grid-cols-2 gap-4">
+                                        <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-2xl p-6 space-y-6">
+                                            <div className="grid grid-cols-2 gap-8">
                                                 <div>
-                                                    <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Combined Score</p>
-                                                    <p className="text-xl font-bold">{evalReport.score.toFixed(1)} / 10</p>
+                                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">Aggregate Safety Score</p>
+                                                    <p className="text-2xl font-bold">{evalReport.score.toFixed(1)} <span className="text-xs text-slate-600">/ 10</span></p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">User Rating</p>
-                                                    <p className="text-xl font-bold text-emerald-400">{evalReport.avgUserRating.toFixed(1)} ⭐</p>
+                                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-2">Avg. Customer Rating</p>
+                                                    <p className="text-2xl font-bold text-amber-400">{evalReport.avgUserRating.toFixed(1)} <span className="text-xs text-slate-600">⭐</span></p>
                                                 </div>
                                             </div>
-                                            <div className="pt-4 border-t border-indigo-500/20 flex justify-between items-center">
-                                                <span className="text-sm font-bold text-slate-400">Merit Recommendation:</span>
-                                                <span className={`text-sm font-black px-3 py-1 rounded-lg ${evalReport.action === 'INCREASE' ? 'bg-emerald-500/20 text-emerald-400' : evalReport.action === 'DECREASE' ? 'bg-rose-500/20 text-rose-400' : 'bg-blue-500/20 text-blue-400'}`}>
-                                                    {evalReport.action} SALARY
+                                            <div className="pt-6 border-t border-indigo-500/20 flex justify-between items-center">
+                                                <span className="text-sm font-bold text-slate-400">System Recommendation:</span>
+                                                <span className={`text-xs font-black px-4 py-1.5 rounded-lg border ${evalReport.action === 'INCREASE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : evalReport.action === 'DECREASE' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
+                                                    {evalReport.action} COMPENSATION
                                                 </span>
                                             </div>
                                         </div>
                                     )}
                                 </div>
 
-                                <div className="flex gap-4">
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setIsEditModalOpen(false)}
-                                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl font-bold transition-all"
+                                <div className="flex flex-col md:flex-row gap-4 pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeleteDriver(selectedDriver.id)}
+                                        className="py-4 px-8 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 rounded-2xl font-bold transition-all text-sm flex items-center justify-center gap-2"
                                     >
-                                        Cancel
+                                        <Trash2 size={18} />
+                                        Decommission Profile
                                     </button>
-                                    <button 
-                                        type="submit"
-                                        className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/30"
-                                    >
-                                        Update Base Salary
-                                    </button>
+                                    <div className="flex-1 flex gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsEditModalOpen(false)}
+                                            className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl font-bold transition-all text-sm"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/30 text-sm flex items-center justify-center gap-2"
+                                        >
+                                            <Save size={18} />
+                                            Synchronize Profile
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -342,18 +434,18 @@ const Drivers = () => {
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-2xl font-bold text-white tracking-tight">Onboard New Operator</h2>
                                 <button onClick={() => setShowAddModal(false)} className="text-slate-500 hover:text-white transition-colors">
-                                    <Plus size={32} className="rotate-45" />
+                                    <X size={32} />
                                 </button>
                             </div>
-                            
+
                             <form onSubmit={handleAddDriver} className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Full Legal Name</label>
-                                    <input 
+                                    <input
                                         required
                                         type="text"
                                         value={newDriver.fullName}
-                                        onChange={(e) => setNewDriver({...newDriver, fullName: e.target.value})}
+                                        onChange={(e) => setNewDriver({ ...newDriver, fullName: e.target.value })}
                                         placeholder="e.g. Mike Johnson"
                                         className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                                     />
@@ -362,36 +454,36 @@ const Drivers = () => {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">License Number</label>
-                                        <input 
+                                        <input
                                             required
                                             type="text"
                                             value={newDriver.licenseNumber}
-                                            onChange={(e) => setNewDriver({...newDriver, licenseNumber: e.target.value.toUpperCase()})}
+                                            onChange={(e) => setNewDriver({ ...newDriver, licenseNumber: e.target.value.toUpperCase() })}
                                             placeholder="DL-XXXXX"
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-mono"
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Exp. Years</label>
-                                        <input 
+                                        <input
                                             required
                                             type="number"
                                             value={newDriver.experienceYears}
-                                            onChange={(e) => setNewDriver({...newDriver, experienceYears: parseInt(e.target.value)})}
+                                            onChange={(e) => setNewDriver({ ...newDriver, experienceYears: parseInt(e.target.value) })}
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="pt-4 flex gap-3">
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={() => setShowAddModal(false)}
                                         className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl font-bold transition-all"
                                     >
                                         Cancel
                                     </button>
-                                    <button 
+                                    <button
                                         type="submit"
                                         className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-bold transition-all"
                                     >
