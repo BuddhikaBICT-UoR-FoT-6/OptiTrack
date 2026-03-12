@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import axios from '../api/axios';
-import { Truck, Search, Plus, Filter, Trash2, CheckCircle2, Clock, Package, Star } from 'lucide-react';
+import { Truck, Search, Plus, Trash2, Package, Star, Clock, User, Filter } from 'lucide-react';
+import MaintenanceGauge from '../components/MaintenanceGauge';
+import AIInsightsSidebar from '../components/AIInsightsSidebar';
 
 const Fleet = () => {
     const [vehicles, setVehicles] = useState([]);
+    const [drivers, setDrivers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedHistory, setSelectedHistory] = useState([]);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [historyVehicle, setHistoryVehicle] = useState(null);
+    const [selectedVehicleForAI, setSelectedVehicleForAI] = useState(null);
 
     const [newVehicle, setNewVehicle] = useState({
         licensePlate: '',
@@ -19,13 +24,22 @@ const Fleet = () => {
         status: 'ACTIVE'
     });
 
-    const fetchVehicles = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/vehicles');
-            setVehicles(response.data);
+            const [vRes, dRes] = await Promise.all([
+                axios.get('/vehicles'),
+                axios.get('/drivers')
+            ]);
+            setVehicles(vRes.data);
+            setDrivers(dRes.data);
+            // Set first active vehicle as default selection for AI insights
+            if (vRes.data.length > 0) {
+                const activeVehicle = vRes.data.find(v => v.status === 'ACTIVE') || vRes.data[0];
+                setSelectedVehicleForAI(activeVehicle);
+            }
         } catch (error) {
-            console.error('Failed to fetch vehicles:', error);
+            console.error('Failed to fetch data:', error);
         } finally {
             setLoading(false);
         }
@@ -44,7 +58,7 @@ const Fleet = () => {
     };
 
     useEffect(() => {
-        fetchVehicles();
+        fetchData();
     }, []);
 
     const handleAddVehicle = async (e) => {
@@ -53,7 +67,7 @@ const Fleet = () => {
             await axios.post('/vehicles', newVehicle);
             setShowAddModal(false);
             setNewVehicle({ licensePlate: '', make: '', model: '', year: new Date().getFullYear(), status: 'ACTIVE' });
-            fetchVehicles();
+            fetchData();
         } catch (error) {
             console.error('Failed to add vehicle:', error);
         }
@@ -63,19 +77,18 @@ const Fleet = () => {
         if (!window.confirm('Are you sure you want to decommission this vehicle?')) return;
         try {
             await axios.delete(`/vehicles/${id}`);
-            fetchVehicles();
+            fetchData();
         } catch (error) {
             console.error('Failed to delete vehicle:', error);
         }
     };
 
-    const getStatusClass = (status) => {
-        switch (status) {
-            case 'ACTIVE': return 'ot-status-active';
-            case 'MAINTENANCE': return 'ot-status-maintenance';
-            default: return 'ot-status-inactive';
-        }
-    };
+    // --- Search Logic ---
+    const filteredVehicles = vehicles.filter(v => 
+        v.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        v.make.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        v.model.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="flex bg-[#0a0a0c] min-h-screen text-white">
@@ -103,10 +116,16 @@ const Fleet = () => {
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                             <input 
                                 type="text" 
-                                placeholder="Search by license plate, make, or model..." 
-                                className="w-full bg-[#0f172a] border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
+                                placeholder="Search fleet by license, make, or model..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-[#0f172a] border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all placeholder:text-slate-600"
                             />
                         </div>
+                        <button className="flex items-center gap-2 px-6 bg-slate-800 hover:bg-slate-700 rounded-2xl text-slate-400 transition-all">
+                            <Filter size={18} />
+                            <span className="text-sm font-bold uppercase tracking-wider">Filters</span>
+                        </button>
                     </div>
 
                     <div className="overflow-x-auto">
@@ -115,6 +134,7 @@ const Fleet = () => {
                                 <tr className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/5">
                                     <th className="px-8 py-6">Asset Detail</th>
                                     <th className="px-8 py-6">License Plate</th>
+                                    <th className="px-8 py-6">Current Driver</th>
                                     <th className="px-8 py-6">Status</th>
                                     <th className="px-8 py-6 text-right">Operational History</th>
                                 </tr>
@@ -122,56 +142,96 @@ const Fleet = () => {
                             <tbody className="divide-y divide-white/5">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="4" className="px-8 py-20 text-center text-slate-500">
+                                        <td colSpan="5" className="px-8 py-20 text-center text-slate-500">
                                             <div className="flex justify-center items-center gap-3">
                                                 <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                                                 Syncing fleet data...
                                             </div>
                                         </td>
                                     </tr>
-                                ) : vehicles.map((vehicle) => (
-                                    <tr key={vehicle.id} className="hover:bg-white/[0.02] transition-colors group">
-                                        <td className="px-8 py-6">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                                                    <Truck size={24} />
+                                ) : filteredVehicles.length > 0 ? filteredVehicles.map((vehicle) => {
+                                    const assignedDriver = drivers.find(d => d.assignedVehicle?.id === vehicle.id);
+                                    return (
+                                        <tr key={vehicle.id} className="hover:bg-white/[0.02] transition-colors group">
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                                        <Truck size={24} />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-white font-bold">{vehicle.make}</div>
+                                                        <div className="text-slate-500 text-sm">{vehicle.model}</div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <div className="text-white font-bold">{vehicle.make}</div>
-                                                    <div className="text-slate-500 text-sm">{vehicle.model}</div>
+                                            </td>
+                                            <td className="px-8 py-6 text-slate-300 font-mono text-sm tracking-wider">{vehicle.licensePlate}</td>
+                                            <td className="px-8 py-6">
+                                                {assignedDriver ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-6 h-6 bg-blue-600/20 rounded-full flex items-center justify-center">
+                                                            <User size={12} className="text-blue-400" />
+                                                        </div>
+                                                        <span className="text-sm font-medium text-slate-300">{assignedDriver.fullName}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-slate-600 italic">Automated Unit</span>
+                                                )}
+                                            </td>
+                                            <td className="px-8 py-6">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${
+                                                    vehicle.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                                }`}>
+                                                    {vehicle.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <button 
+                                                        onClick={() => fetchVehicleHistory(vehicle)}
+                                                        className="px-4 py-2 bg-blue-600/10 text-blue-400 text-xs font-bold rounded-xl border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all"
+                                                    >
+                                                        Cargo Manifest
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDeleteVehicle(vehicle.id)}
+                                                        className="p-2 text-slate-600 hover:text-rose-500 transition-colors"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6 text-slate-300 font-mono text-sm tracking-wider">{vehicle.licensePlate}</td>
-                                        <td className="px-8 py-6">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold border ${
-                                                vehicle.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                            }`}>
-                                                {vehicle.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <button 
-                                                    onClick={() => fetchVehicleHistory(vehicle)}
-                                                    className="px-4 py-2 bg-blue-600/10 text-blue-400 text-xs font-bold rounded-xl border border-blue-500/20 hover:bg-blue-600 hover:text-white transition-all"
-                                                >
-                                                    Cargo Manifest
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDeleteVehicle(vehicle.id)}
-                                                    className="p-2 text-slate-600 hover:text-rose-500 transition-colors"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                }) : (
+                                    <tr>
+                                        <td colSpan="5" className="px-8 py-20 text-center text-slate-500 italic">
+                                            No assets matching "{searchTerm}" found in the fleet registry.
                                         </td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>
                 </div>
+
+                {/* AI-Powered Maintenance & Safety Insights */}
+                {selectedVehicleForAI && (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+                        <div className="lg:col-span-2">
+                            <MaintenanceGauge 
+                                vehicleId={selectedVehicleForAI.id} 
+                                vehicleName={`${selectedVehicleForAI.make} ${selectedVehicleForAI.model} - ${selectedVehicleForAI.licensePlate}`}
+                            />
+                        </div>
+                        <div className="">
+                            <AIInsightsSidebar 
+                                type="maintenance"
+                                entityId={selectedVehicleForAI.id}
+                                entityName={selectedVehicleForAI.licensePlate}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* Cargo History Modal */}
                 {isHistoryOpen && (
