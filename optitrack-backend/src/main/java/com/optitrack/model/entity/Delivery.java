@@ -32,14 +32,20 @@ public class Delivery {
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     private DeliveryStatus status = DeliveryStatus.PENDING;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
+    @Builder.Default
     private Double advancePayment = 0.0;
+    
+    @Builder.Default
     private Double totalPayment = 0.0;
+    
+    @Builder.Default
     private Double cancellationFee = 0.0;
 
     private String qrCodeData;
@@ -48,11 +54,24 @@ public class Delivery {
     // Delivery Type: "CENTER_TO_HOME" or "HOME_TO_LOCATION"
     private String deliveryType;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isDelivered = false;
 
     private Double destinationLat;
     private Double destinationLon;
+
+    // AI & Merit Metrics
+    private Double userRating;
+    private String userFeedback;
+    
+    @Builder.Default
+    private Boolean isNightDelivery = false;
+    
+    @Builder.Default
+    private Boolean isWeatherChallenged = false;
+    
+    private Long assignmentToDeliveryMinutes;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id")

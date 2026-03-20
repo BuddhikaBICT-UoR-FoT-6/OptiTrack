@@ -46,7 +46,7 @@ const CustomerPortal = () => {
         <div className="flex bg-[#0a0a0c] min-h-screen text-white">
             <Sidebar />
 
-            <main className="flex-1 p-8">
+            <main className="ot-page-container">
                 <div className="max-w-5xl mx-auto space-y-8">
                     <header>
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">

@@ -5,6 +5,8 @@ import com.optitrack.repository.DriverProfileRepository;
 import com.optitrack.service.DriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -30,13 +32,25 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
+    @Transactional
     public DriverProfile updateDriverStatus(Long id, String status) {
         DriverProfile driver = getDriverById(id);
-        // Add logic to update status if needed
+        driver.setStatus(status);
         return driverRepository.save(driver);
     }
 
     @Override
+    @Transactional
+    public void updateBaseSalary(Long id, Double amount) {
+        DriverProfile driver = getDriverById(id);
+        driver.setBaseSalary(amount);
+        // Also update current salary to match the new base
+        driver.setCurrentSalary(amount);
+        driverRepository.save(driver);
+    }
+
+    @Override
+    @Transactional
     public void deleteDriver(Long id) {
         driverRepository.deleteById(id);
     }

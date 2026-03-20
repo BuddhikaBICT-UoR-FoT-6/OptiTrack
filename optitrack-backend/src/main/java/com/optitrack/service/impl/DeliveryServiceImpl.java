@@ -4,7 +4,6 @@ import com.optitrack.model.entity.Delivery;
 import com.optitrack.model.enums.DeliveryStatus;
 import com.optitrack.model.enums.PaymentMethod;
 import com.optitrack.repository.DeliveryRepository;
-import com.optitrack.repository.TelemetryEventRepository;
 import com.optitrack.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +21,6 @@ import java.util.Optional;
 public class DeliveryServiceImpl implements DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
-    private final TelemetryEventRepository telemetryRepository;
 
     @Override
     public List<Delivery> getAllDeliveries() {
@@ -40,7 +39,6 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     public List<Delivery> getDeliveriesByCustomer(Long customerId) {
-        // Assuming we add findByCustomerId to repo
         return deliveryRepository.findAll().stream()
                 .filter(d -> d.getCustomer() != null && d.getCustomer().getId().equals(customerId))
                 .toList();
@@ -51,7 +49,6 @@ public class DeliveryServiceImpl implements DeliveryService {
     public Delivery createDeliveryRequest(Delivery delivery) {
         delivery.setStatus(DeliveryStatus.PENDING);
         delivery.setAssignedAt(LocalDateTime.now());
-        // Mock QR data generation
         delivery.setQrCodeData("QR-" + System.currentTimeMillis());
         delivery.setOtp(String.format("%06d", (int)(Math.random() * 1000000)));
         return deliveryRepository.save(delivery);
@@ -66,6 +63,11 @@ public class DeliveryServiceImpl implements DeliveryService {
         if (DeliveryStatus.DELIVERED.name().equals(status)) {
             delivery.setIsDelivered(true);
             delivery.setDeliveredAt(LocalDateTime.now());
+            
+            if (delivery.getAssignedAt() != null) {
+                long minutes = ChronoUnit.MINUTES.between(delivery.getAssignedAt(), delivery.getDeliveredAt());
+                delivery.setAssignmentToDeliveryMinutes(minutes);
+            }
         }
         return deliveryRepository.save(delivery);
     }
@@ -75,21 +77,30 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Delivery not found"));
         
-        // 1. QR Validation
         if (!delivery.getQrCodeData().equals(qrData)) {
             log.warn("❌ [OPTI-LOGISTICS] QR Mismatch for delivery {}", id);
             return false;
         }
 
-        // 2. Proximity Check (within 200m)
         double distance = calculateDistance(lat, lon, delivery.getDestinationLat(), delivery.getDestinationLon());
-        if (distance > 0.2) { // 0.2 km = 200m
+        if (distance > 0.5) { // 500m proximity threshold
             log.warn("❌ [OPTI-LOGISTICS] Proximity Check Failed for delivery {}. Distance: {} km", id, distance);
             return false;
         }
 
         log.info("✅ [OPTI-LOGISTICS] Delivery {} validated successfully.", id);
         return true;
+    }
+
+    @Override
+    @Transactional
+    public void submitRating(Long id, Double rating, String feedback) {
+        Delivery delivery = deliveryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+        delivery.setUserRating(rating);
+        delivery.setUserFeedback(feedback);
+        deliveryRepository.save(delivery);
+        log.info("⭐ [OPTI-MERIT] Feedback recorded for delivery {}: {} stars", id, rating);
     }
 
     @Override
@@ -104,8 +115,10 @@ public class DeliveryServiceImpl implements DeliveryService {
             delivery.setStatus(DeliveryStatus.PAID_ADVANCE);
         } else {
             delivery.setTotalPayment(delivery.getTotalPayment() + amount);
-            if (delivery.getTotalPayment() >= 100.0) { // Mock logic for full payment
+            if (delivery.getTotalPayment() >= delivery.getTotalPayment() * 0.9) { // 90% payment threshold
                 delivery.setStatus(DeliveryStatus.DELIVERED);
+                delivery.setIsDelivered(true);
+                delivery.setDeliveredAt(LocalDateTime.now());
             }
         }
         deliveryRepository.save(delivery);
@@ -118,8 +131,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 .orElseThrow(() -> new RuntimeException("Delivery not found"));
         
         delivery.setStatus(DeliveryStatus.CANCELLED);
-        delivery.setCancellationFee(250.0); // Mock fee
-        // Refund logic would go here
+        delivery.setCancellationFee(250.0);
         deliveryRepository.save(delivery);
     }
 

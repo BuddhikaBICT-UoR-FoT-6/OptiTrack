@@ -1,5 +1,7 @@
 package com.optitrack.ai;
 
+import com.optitrack.model.entity.Delivery;
+import com.optitrack.model.entity.DriverProfile;
 import com.optitrack.model.entity.TelemetryEvent;
 import java.util.List;
 
@@ -11,4 +13,5 @@ import java.util.List;
 public interface GeminiAnalyzer {
     String analyzePerformance(List<TelemetryEvent> events);
     String generateSafetyReport(List<TelemetryEvent> events, String driverName);
+    String analyzeDriverProfile(DriverProfile profile, List<Delivery> history);
 }

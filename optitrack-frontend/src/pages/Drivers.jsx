@@ -124,8 +124,8 @@ const Drivers = () => {
         <div className="flex bg-[#0a0a0c] min-h-screen text-white">
             <Sidebar />
 
-            <main className="flex-1 p-8">
-                <header className="flex justify-between items-center mb-10">
+            <main className="ot-page-container">
+                <header className="ot-header flex justify-between items-center">
                     <div>
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent tracking-tight">
                             Workforce Management

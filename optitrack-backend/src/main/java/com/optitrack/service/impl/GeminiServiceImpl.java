@@ -30,7 +30,6 @@ public class GeminiServiceImpl implements GeminiService {
             return "No telemetry data available for analysis.";
         }
 
-        // 1. Prepare data for the prompt
         String telemetrySummary = events.stream()
                 .map(e -> String.format("Speed: %.1f kph, Fuel: %.0f%%, Harsh Braking: %s", 
                         e.getSpeedKph(), e.getFuelLevel(), e.getIsHarshBraking()))
@@ -41,7 +40,6 @@ public class GeminiServiceImpl implements GeminiService {
                 "Provide a concise summary (max 3 sentences) of their performance and 3 specific, professional bullet points for improvement. " +
                 "Focus on safety, fuel efficiency, and asset preservation.";
 
-        // 2. Build the request payload
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
                 Map.of("parts", List.of(
@@ -51,13 +49,22 @@ public class GeminiServiceImpl implements GeminiService {
         );
 
         try {
-            // 3. Call Gemini API
+            @SuppressWarnings("unchecked")
             Map<String, Object> response = restTemplate.postForObject(GEMINI_API_URL + apiKey, requestBody, Map.class);
             
-            // 4. Extract text response
+            if (response == null || !response.containsKey("candidates")) {
+                return "AI analysis returned an empty response. Verify API key and network connectivity.";
+            }
+
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> candidates = (List<Map<String, Object>>) response.get("candidates");
+            
+            if (candidates.isEmpty()) return "No AI candidates generated.";
+
+            @SuppressWarnings("unchecked")
             Map<String, Object> content = (Map<String, Object>) candidates.get(0).get("content");
+            
+            @SuppressWarnings("unchecked")
             List<Map<String, Object>> parts = (List<Map<String, Object>>) content.get("parts");
             
             return (String) parts.get(0).get("text");

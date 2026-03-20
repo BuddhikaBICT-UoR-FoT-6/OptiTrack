@@ -49,6 +49,9 @@ public class DriverProfile {
     @Builder.Default
     private Double currentSalary = 0.0;
 
+    @Builder.Default
+    private String status = "ACTIVE";
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;

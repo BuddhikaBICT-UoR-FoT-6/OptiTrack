@@ -1,8 +1,8 @@
 package com.optitrack.service;
 
-import com.optitrack.model.entity.DriverProfile;
+import java.util.Map;
 
 public interface PerformanceService {
-    String evaluateSalary(Long driverId);
-    void adjustSalary(Long driverId, double percentage);
+    String getDriverInsights(Long driverId);
+    Map<String, Object> evaluateSalary(Long driverId);
 }
