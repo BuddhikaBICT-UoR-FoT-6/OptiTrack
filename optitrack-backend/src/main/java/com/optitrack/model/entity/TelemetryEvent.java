@@ -47,6 +47,14 @@ public class TelemetryEvent {
 
     @Column(nullable = false)
     @Builder.Default
+    private Double engineTemp = 70.0; // Engine temperature in Celsius
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Double vibrationLevel = 0.0; // Vibration level (0-10 scale)
+
+    @Column(nullable = false)
+    @Builder.Default
     private Boolean isHarshBraking = false;
 
     @Column(length = 50)

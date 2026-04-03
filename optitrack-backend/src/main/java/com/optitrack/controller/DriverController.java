@@ -13,6 +13,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/drivers")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class DriverController {
 
     private final DriverService driverService;
@@ -26,6 +27,11 @@ public class DriverController {
     @PostMapping
     public ResponseEntity<DriverProfile> createDriver(@RequestBody DriverProfile driver) {
         return ResponseEntity.ok(driverService.createDriver(driver));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DriverProfile> updateDriver(@PathVariable Long id, @RequestBody DriverProfile driver) {
+        return ResponseEntity.ok(driverService.updateDriver(id, driver));
     }
 
     @DeleteMapping("/{id}")

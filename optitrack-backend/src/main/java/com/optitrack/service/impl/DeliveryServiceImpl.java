@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +52,11 @@ public class DeliveryServiceImpl implements DeliveryService {
         delivery.setAssignedAt(LocalDateTime.now());
         delivery.setQrCodeData("QR-" + System.currentTimeMillis());
         delivery.setOtp(String.format("%06d", (int)(Math.random() * 1000000)));
+        
+        // Initial Document Numbers
+        delivery.setWaybillNumber("WB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        delivery.setInvoiceNumber("INV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        
         return deliveryRepository.save(delivery);
     }
 
@@ -83,7 +89,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
 
         double distance = calculateDistance(lat, lon, delivery.getDestinationLat(), delivery.getDestinationLon());
-        if (distance > 0.5) { // 500m proximity threshold
+        if (distance > 0.5) {
             log.warn("❌ [OPTI-LOGISTICS] Proximity Check Failed for delivery {}. Distance: {} km", id, distance);
             return false;
         }
@@ -100,7 +106,22 @@ public class DeliveryServiceImpl implements DeliveryService {
         delivery.setUserRating(rating);
         delivery.setUserFeedback(feedback);
         deliveryRepository.save(delivery);
-        log.info("⭐ [OPTI-MERIT] Feedback recorded for delivery {}: {} stars", id, rating);
+    }
+
+    @Override
+    @Transactional
+    public void submitSignature(Long id, String signatureBase64) {
+        Delivery delivery = deliveryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+        delivery.setCustomerSignature(signatureBase64);
+        
+        // Finalize document numbers if not set
+        if (delivery.getWaybillNumber() == null) {
+            delivery.setWaybillNumber("WB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        }
+        
+        deliveryRepository.save(delivery);
+        log.info("✍️ [OPTI-VAULT] E-Signature captured for delivery {}", id);
     }
 
     @Override
@@ -115,7 +136,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             delivery.setStatus(DeliveryStatus.PAID_ADVANCE);
         } else {
             delivery.setTotalPayment(delivery.getTotalPayment() + amount);
-            if (delivery.getTotalPayment() >= delivery.getTotalPayment() * 0.9) { // 90% payment threshold
+            if (delivery.getTotalPayment() >= 100.0) {
                 delivery.setStatus(DeliveryStatus.DELIVERED);
                 delivery.setIsDelivered(true);
                 delivery.setDeliveredAt(LocalDateTime.now());
@@ -140,7 +161,6 @@ public class DeliveryServiceImpl implements DeliveryService {
         double dist = Math.sin(Math.toRadians(lat1)) * Math.sin(Math.toRadians(lat2))
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) * Math.cos(Math.toRadians(theta));
         dist = Math.acos(dist);
-        dist = Math.toDegrees(dist);
         dist = dist * 60 * 1.1515 * 1.609344;
         return dist;
     }

@@ -1,13 +1,11 @@
 package com.optitrack.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.optitrack.model.enums.VehicleStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,8 +13,6 @@ import java.time.LocalDateTime;
 
 /**
  * Purpose: Represents a physical vehicle asset in the OptiTrack fleet.
- * Maps to the 'vehicles' table. Acts as the central link between
- * telemetry data and driver assignments.
  */
 @Entity
 @Table(name = "vehicles", uniqueConstraints = {
@@ -26,6 +22,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = "assignedDriver")
 public class Vehicle {
 
     @Id
@@ -39,11 +36,11 @@ public class Vehicle {
 
     @NotBlank
     @Size(max = 50)
-    private String make; // e.g., Toyota
+    private String make; 
 
     @NotBlank
     @Size(max = 50)
-    private String model; // e.g., HiAce
+    private String model;
 
     @Column(nullable = false)
     private Integer year;
@@ -52,6 +49,10 @@ public class Vehicle {
     @Column(nullable = false)
     @Builder.Default
     private VehicleStatus status = VehicleStatus.INACTIVE;
+
+    @OneToOne(mappedBy = "assignedVehicle")
+    @JsonIgnore
+    private DriverProfile assignedDriver;
 
     @CreationTimestamp
     @Column(updatable = false)

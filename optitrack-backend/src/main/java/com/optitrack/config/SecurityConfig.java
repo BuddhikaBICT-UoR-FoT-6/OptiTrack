@@ -36,6 +36,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 1. Critical Public Endpoints (Permit All)
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/drivers/*/insights").permitAll()
+                        .requestMatchers("/api/drivers/*/evaluate").permitAll()
                         .requestMatchers("/api/drivers/**").permitAll()
                         .requestMatchers("/api/vehicles/**").permitAll()
                         .requestMatchers("/api/deliveries/**").permitAll()

@@ -15,6 +15,7 @@ public interface DeliveryService {
     
     boolean validateDelivery(Long id, String qrData, double lat, double lon);
     void submitRating(Long id, Double rating, String feedback);
+    void submitSignature(Long id, String signatureBase64);
     void processPayment(Long id, String method, double amount);
     void cancelDelivery(Long id);
 }

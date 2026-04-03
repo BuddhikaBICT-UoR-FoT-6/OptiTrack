@@ -57,6 +57,13 @@ public class TelemetrySimulationService {
 
             // 2. Simulate Fuel Consumption
             double fuel = 15 + random.nextDouble() * 85; 
+            
+            // 3. Simulate Engine Temperature (70-95°C normal, can spike to 110 under stress)
+            double engineTemp = 70 + (speed / 100) * 20 + random.nextDouble() * 10;
+            
+            // 4. Simulate Vibration (0-10 scale, higher at extreme speeds or harsh braking)
+            double vibration = (speed / 100) * 5 + (isHarshBraking ? 8 : 0) + random.nextDouble() * 2;
+            vibration = Math.min(10.0, vibration); // Cap at 10
 
             TelemetryEvent event = TelemetryEvent.builder()
                     .vehicle(vehicle)
@@ -65,6 +72,8 @@ public class TelemetrySimulationService {
                     .gpsLongitude(BASE_LON + lonOffset)
                     .speedKph(speed)
                     .fuelLevel(fuel)
+                    .engineTemp(engineTemp)
+                    .vibrationLevel(vibration)
                     .isHarshBraking(isHarshBraking)
                     .recordedAt(LocalDateTime.now())
                     .build();

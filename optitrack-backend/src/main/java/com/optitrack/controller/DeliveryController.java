@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/deliveries")
@@ -59,6 +60,18 @@ public class DeliveryController {
     @PostMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelDelivery(@PathVariable Long id) {
         deliveryService.cancelDelivery(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<Void> submitRating(@PathVariable Long id, @RequestParam Double rating, @RequestParam String feedback) {
+        deliveryService.submitRating(id, rating, feedback);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/signature")
+    public ResponseEntity<Void> submitSignature(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        deliveryService.submitSignature(id, payload.get("signature"));
         return ResponseEntity.ok().build();
     }
 

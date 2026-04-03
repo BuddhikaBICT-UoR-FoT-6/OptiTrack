@@ -13,30 +13,33 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DriverServiceImpl implements DriverService {
 
-    private final DriverProfileRepository driverRepository;
-
-    @Override
-    public DriverProfile createDriver(DriverProfile driver) {
-        return driverRepository.save(driver);
-    }
+    private final DriverProfileRepository driverProfileRepository;
 
     @Override
     public List<DriverProfile> getAllDrivers() {
-        return driverRepository.findAll();
+        return driverProfileRepository.findAll();
+    }
+
+    @Override
+    public DriverProfile createDriver(DriverProfile driver) {
+        return driverProfileRepository.save(driver);
     }
 
     @Override
     public DriverProfile getDriverById(Long id) {
-        return driverRepository.findById(id)
+        return driverProfileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Driver not found"));
     }
 
     @Override
     @Transactional
-    public DriverProfile updateDriverStatus(Long id, String status) {
+    public DriverProfile updateDriver(Long id, DriverProfile driverDetails) {
         DriverProfile driver = getDriverById(id);
-        driver.setStatus(status);
-        return driverRepository.save(driver);
+        driver.setFullName(driverDetails.getFullName());
+        driver.setLicenseNumber(driverDetails.getLicenseNumber());
+        driver.setExperienceYears(driverDetails.getExperienceYears());
+        // Do not update score or salary here as they are merit-calculated
+        return driverProfileRepository.save(driver);
     }
 
     @Override
@@ -44,14 +47,22 @@ public class DriverServiceImpl implements DriverService {
     public void updateBaseSalary(Long id, Double amount) {
         DriverProfile driver = getDriverById(id);
         driver.setBaseSalary(amount);
-        // Also update current salary to match the new base
-        driver.setCurrentSalary(amount);
-        driverRepository.save(driver);
+        // Recalculate current salary based on performance multiplier (if any)
+        driver.setCurrentSalary(amount); // Simple sync for now
+        driverProfileRepository.save(driver);
+    }
+
+    @Override
+    @Transactional
+    public DriverProfile updateDriverStatus(Long id, String status) {
+        DriverProfile driver = getDriverById(id);
+        driver.setStatus(status);
+        return driverProfileRepository.save(driver);
     }
 
     @Override
     @Transactional
     public void deleteDriver(Long id) {
-        driverRepository.deleteById(id);
+        driverProfileRepository.deleteById(id);
     }
 }

@@ -2,11 +2,14 @@ package com.optitrack.controller;
 
 import com.optitrack.model.entity.TelemetryEvent;
 import com.optitrack.service.TelemetryService;
+import com.optitrack.service.PredictiveMaintenanceAnalyzer;
+import com.optitrack.service.DriverFatigueAnalyzer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/telemetry")
@@ -15,6 +18,8 @@ public class TelemetryController {
 
     private final TelemetryService telemetryService;
     private final com.optitrack.service.impl.TelemetrySimulationService simulationService;
+    private final PredictiveMaintenanceAnalyzer maintenanceAnalyzer;
+    private final DriverFatigueAnalyzer fatigueAnalyzer;
 
     @PostMapping("/record")
     public ResponseEntity<TelemetryEvent> recordEvent(@RequestBody TelemetryEvent event) {
@@ -56,12 +61,62 @@ public class TelemetryController {
      * System Health Check: Returns counts of all core entities.
      */
     @GetMapping("/system/status")
-    public ResponseEntity<java.util.Map<String, Long>> getSystemStatus() {
-        java.util.Map<String, Long> status = new java.util.HashMap<>();
+    public ResponseEntity<Map<String, Long>> getSystemStatus() {
+        Map<String, Long> status = new java.util.HashMap<>();
         status.put("vehicles", telemetryService.getVehicleCount());
         status.put("drivers", telemetryService.getDriverCount());
         status.put("scorecards", telemetryService.getScorecardCount());
         status.put("telemetryEvents", telemetryService.getEventCount());
         return ResponseEntity.ok(status);
+    }
+
+    // ==================== AI ANALYZER ENDPOINTS ====================
+
+    /**
+     * Predictive Maintenance: Get maintenance probability for a vehicle
+     */
+    @GetMapping("/ai/maintenance/probability/{vehicleId}")
+    public ResponseEntity<Map<String, Object>> getMaintenanceProbability(@PathVariable Long vehicleId) {
+        return ResponseEntity.ok(maintenanceAnalyzer.getMaintenanceInsights(vehicleId));
+    }
+
+    /**
+     * Predictive Maintenance: Get raw probability score
+     */
+    @GetMapping("/ai/maintenance/score/{vehicleId}")
+    public ResponseEntity<Double> getMaintenanceScore(@PathVariable Long vehicleId) {
+        return ResponseEntity.ok(maintenanceAnalyzer.calculateMaintenanceProbability(vehicleId));
+    }
+
+    /**
+     * Driver Fatigue: Get fatigue score for a driver
+     */
+    @GetMapping("/ai/fatigue/score/{driverId}")
+    public ResponseEntity<Double> getFatigueScore(@PathVariable Long driverId) {
+        return ResponseEntity.ok(fatigueAnalyzer.calculateFatigueScore(driverId));
+    }
+
+    /**
+     * Driver Fatigue: Get detailed fatigue insights
+     */
+    @GetMapping("/ai/fatigue/insights/{driverId}")
+    public ResponseEntity<Map<String, Object>> getFatigueInsights(@PathVariable Long driverId) {
+        return ResponseEntity.ok(fatigueAnalyzer.getFatigueInsights(driverId));
+    }
+
+    /**
+     * Driver Fatigue: Get latest dashcam analysis
+     */
+    @GetMapping("/ai/fatigue/dashcam/{driverId}")
+    public ResponseEntity<DriverFatigueAnalyzer.DashcamAnalysis> getDashcamAnalysis(@PathVariable Long driverId) {
+        return ResponseEntity.ok(fatigueAnalyzer.analyzeDashcamFrame(driverId));
+    }
+
+    /**
+     * Driver Fatigue: Get recent fatigue alerts
+     */
+    @GetMapping("/ai/fatigue/alerts/{driverId}")
+    public ResponseEntity<List<DriverFatigueAnalyzer.FatigueAlert>> getFatigueAlerts(@PathVariable Long driverId) {
+        return ResponseEntity.ok(fatigueAnalyzer.getRecentFatigueAlerts(driverId));
     }
 }

@@ -51,7 +51,6 @@ public class Delivery {
     private String qrCodeData;
     private String otp;
     
-    // Delivery Type: "CENTER_TO_HOME" or "HOME_TO_LOCATION"
     private String deliveryType;
 
     @Builder.Default
@@ -72,6 +71,14 @@ public class Delivery {
     private Boolean isWeatherChallenged = false;
     
     private Long assignmentToDeliveryMinutes;
+
+    // Digital Document Vault (e-Waybills)
+    private String waybillNumber;
+    private String invoiceNumber;
+    
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String customerSignature; // Base64 Signature Image
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id")
