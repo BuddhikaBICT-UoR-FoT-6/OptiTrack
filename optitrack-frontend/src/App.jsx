@@ -7,6 +7,7 @@ import Drivers from './pages/Drivers';
 import Tracking from './pages/Tracking';
 import Analytics from './pages/Analytics';
 import Safety from './pages/Safety';
+import AIInsights from './pages/AIInsights';
 import CustomerPortal from './pages/CustomerPortal';
 import AlertListener from './components/AlertListener';
 import useAuthStore from './store/useAuthStore';
@@ -36,6 +37,11 @@ const App = () => {
         <Route
           path="/drivers"
           element={isAuthenticated ? <Drivers /> : <Navigate to="/login" />}
+        />
+
+        <Route
+          path="/ai-insights"
+          element={isAuthenticated ? <AIInsights /> : <Navigate to="/login" />}
         />
 
         <Route

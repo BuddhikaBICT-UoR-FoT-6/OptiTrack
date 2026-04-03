@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Truck, Users, Activity, Settings, LogOut, Map, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, Truck, Users, Activity, Settings, LogOut, Map, ShieldAlert, Brain } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 
 const Sidebar = () => {
@@ -12,6 +12,7 @@ const Sidebar = () => {
         { icon: <Truck size={20} />, label: 'Fleet', path: '/fleet' },
         { icon: <Map size={20} />, label: 'Live Tracking', path: '/tracking' },
         { icon: <Users size={20} />, label: 'Drivers', path: '/drivers' },
+        { icon: <Brain size={20} />, label: 'AI Insights', path: '/ai-insights' },
         { icon: <Activity size={20} />, label: 'Analytics', path: '/analytics' },
         { icon: <ShieldAlert size={20} />, label: 'Safety', path: '/safety' },
     ];

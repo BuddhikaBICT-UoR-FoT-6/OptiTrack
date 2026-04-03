@@ -91,7 +91,7 @@ const Safety = () => {
                                         <div className="text-center md:text-left">
                                             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Safety Score</p>
                                             <div className="flex items-center gap-2 justify-center md:justify-start">
-                                                <span className={`text-2xl font-black ${risk.color}`}>{driver.averageScore}</span>
+                                                <span className={`text-2xl font-black ${risk.color}`}>{driver.averageScore.toFixed(2)}</span>
                                                 <span className="text-slate-600 font-bold">/ 10</span>
                                             </div>
                                         </div>
@@ -148,7 +148,7 @@ const Safety = () => {
                                                 </div>
                                                 <div>
                                                     <p className="text-[10px] text-slate-500 uppercase font-bold">Efficiency</p>
-                                                    <p className="text-white font-bold">{driver.scorecard.efficiencyRating} <span className="text-slate-500 font-normal">/ 10</span></p>
+                                                    <p className="text-white font-bold">{driver.scorecard.efficiencyRating.toFixed(2)} <span className="text-slate-500 font-normal">/ 10</span></p>
                                                 </div>
                                             </div>
                                         </div>
