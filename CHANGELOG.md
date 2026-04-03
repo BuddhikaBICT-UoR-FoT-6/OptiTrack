@@ -2,6 +2,18 @@
 
 All notable changes to the **OptiTrack** project will be documented in this file.
 
+## [1.2.0] - 2026-04-03
+### Added
+- **Mass Data Seeding Engine:** Overhauled DataInitializer to generate 30+ vehicles and 22+ drivers with unique Sri Lankan identities.
+- **High-Fidelity Search Intelligence:** Integrated real-time search bars in Fleet and Workforce hubs for instant asset/crew filtering.
+- **Ratnapura Command Post:** Calibrated live tracking to center on Bandaranayake Road, Ratnapura for localized operational focus.
+- **Predictive Intelligence:** Added skeleton for Fatigue and Maintenance analyzers in the service layer.
+- **Workforce Dossier:** Upgraded driver profiles with full CRUD capabilities and merit-based salary review reports.
+
+### Changed
+- Refined map zoom levels and centering logic for high-fidelity command center demonstrations.
+- Polished UI metrics (Safety Score) to fixed-decimal precision for production aesthetics.
+
 ## [1.0.0] - 2026-01-07
 ### Added
 - **AI Performance Analyst:** Integrated Google Gemini 1.5 Flash for automated driver behavior analysis.

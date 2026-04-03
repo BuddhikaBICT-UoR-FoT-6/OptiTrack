@@ -1,71 +1,83 @@
-# 🛰️ OptiTrack: High-Fidelity Fleet Management & AI Analytics
+# OptiTrack: Autonomous Logistics Ecosystem 🛡️🛰️🤖
 
-OptiTrack is a production-grade, full-stack fleet management platform designed for real-time asset tracking, performance analytics, and AI-driven safety monitoring. Built with a focus on high-performance engineering and premium aesthetics, OptiTrack transforms raw IoT telemetry into actionable operational intelligence.
+**OptiTrack** is a high-fidelity, AI-powered logistics management platform designed to revolutionize fleet operations and workforce performance. Built with a focus on real-time telemetry, predictive intelligence, and premium UI aesthetics, OptiTrack provides a comprehensive suite for modern logistical command centers.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Build](https://img.shields.io/badge/build-success-brightgreen.svg)
+---
 
 ## 🚀 Key Features
 
-*   **📡 Live Telemetry Pipeline:** Real-time tracking of vehicle location, speed, and fuel levels using an integrated IoT simulation engine.
-*   **🗺️ Interactive Tracking Hub:** High-fidelity dark-themed map (React-Leaflet) with truck-specific markers and a professional HUD (Heads-Up Display).
-*   **📊 Performance Analytics:** Dynamic data visualization (Recharts) for speed velocity trends and fuel efficiency history.
-*   **🤖 AI Performance Analyst:** Integration with **Google Gemini 1.5 Flash** to analyze driver behavior and generate professional safety recommendations.
-*   **🛡️ Safety & Compliance:** Automated risk profiling based on incident tracking (harsh braking, speeding) and AI-generated scorecards.
-*   **🔒 Enterprise Security:** Stateless JWT authentication, role-based access control (Admin/User), and hardened CORS policies.
+### 📡 Live Tactical Command Center
+- **Ratnapura Hub Focus:** Optimized real-time tracking centered on Bandaranayake Road, Ratnapura.
+- **Dynamic Telemetry:** Live mapping of speed, fuel levels, and environmental conditions across 30+ vehicles.
+- **High-Fidelity UI:** Interactive Leaflet-powered map with custom HUD overlays and night-mode aesthetics.
+
+### 👤 Workforce Intelligence (Dossier)
+- **AI Performance Insights:** Google Gemini 1.5 Flash powered analysis of driver behavior and career trends.
+- **Safety Hub:** Automated safety scoring (e.g., 9.4 / 10) and merit-based salary review generation.
+- **Full Dossier Control:** Comprehensive CRUD management for a roster of 20+ specialized drivers.
+
+### 🚛 Intelligent Fleet Management
+- **Mass Seeding:** Authentic Sri Lankan operational data including vehicle makes (Toyota, Isuzu, etc.) and localized identities.
+- **Search Intelligence:** Real-time filtering engines for instant asset discovery and crew management.
+- **Status Monitoring:** Live tracking of maintenance states and operational availability.
+
+### 🧠 Predictive Analytics
+- **AI Recommendations:** Real-time feedback loops for fuel optimization and route safety.
+- **Safety Scorecard:** Historical performance tracking and automated merit evaluation reports.
+
+---
 
 ## 🛠️ Technology Stack
 
-### Backend
-*   **Java 21 / Spring Boot 3**
-*   **Spring Security & JWT** (Stateless Auth)
-*   **Spring Data JPA** (MySQL Persistence)
-*   **Google Gemini API** (AI Analysis)
-*   **Lombok & MapStruct**
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | React, Tailwind CSS, Lucide Icons, Leaflet GIS, Recharts |
+| **Backend** | Spring Boot, Spring Security, JPA / Hibernate, H2/MySQL |
+| **Intelligence** | Google Gemini 1.5 Flash AI API |
+| **Operations** | Real-time Telemetry Simulation, JWT Authentication |
 
-### Frontend
-*   **React 18 / Vite**
-*   **Tailwind CSS** (Custom Semantic Design System)
-*   **React-Leaflet** (GIS Visualization)
-*   **Recharts** (Data Analytics)
-*   **Zustand** (State Management)
+---
 
-## ⚙️ Installation & Setup
+## 🚦 Getting Started
 
 ### Prerequisites
-*   JDK 21 or higher
-*   Node.js 18+
-*   MySQL 8.0+
+- **JDK 17+**
+- **Node.js 18+**
+- **Google API Key** (Set in `application.properties` as `GOOGLE_API_KEY`)
 
-### Backend Setup
-1. Clone the repository and navigate to `optitrack-backend`.
-2. Configure your `application.properties` or set environment variables:
-   ```properties
-   spring.datasource.username=your_user
-   spring.datasource.password=your_password
-   google.api.key=YOUR_GEMINI_API_KEY
-   ```
-3. Run the application:
+### Installation
+
+1. **Clone the Repository**
    ```bash
+   git clone https://github.com/your-repo/optitrack.git
+   cd optitrack
+   ```
+
+2. **Backend Setup**
+   ```bash
+   cd optitrack-backend
    ./mvnw spring-boot:run
    ```
 
-### Frontend Setup
-1. Navigate to `optitrack-frontend`.
-2. Install dependencies:
+3. **Frontend Setup**
    ```bash
+   cd optitrack-frontend
    npm install
-   ```
-3. Start the dev server:
-   ```bash
    npm run dev
    ```
 
-## 📜 Documentation
+---
 
-*   [CHANGELOG.md](./CHANGELOG.md) - Detailed development history and version milestones.
-*   [LICENSE](./LICENSE) - MIT License details.
+## 📜 Documentation & Changelog
+
+For a detailed history of updates and milestones, please refer to the [CHANGELOG.md](./CHANGELOG.md).
 
 ---
-Developed with ❤️ by **BuddhikaBICT-UoR-FoT-6**
+
+## 🛡️ License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+*Developed for the high-fidelity logistics project viva.* 🇱🇰✨🦾
