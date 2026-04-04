@@ -2,6 +2,19 @@
 
 All notable changes to the **OptiTrack** project will be documented in this file.
 
+## [2.0.0] - 2026-05-13
+### Added
+- **Predictive Intelligence Core:** Implemented Gemini-backed route optimization and deterministic fuel forecasting engines.
+- **Digital Document Vault (e-Waybills):** Added high-fidelity PDF generation with customer e-signatures for secure custody transfer.
+- **Atmospheric Intelligence:** Integrated live OpenWeatherMap API for real-time Sri Lankan weather overlays on the tactical map.
+- **Full QA Suite:** Established JUnit/Mockito unit tests for salary evaluation and Playwright E2E "Happy Path" automation.
+- **System Documentation:** Architected high-fidelity Mermaid diagrams (ER, Architecture, Sequence) for technical documentation.
+
+### Changed
+- **Architectural Hardening:** Standardized backend testing dependencies in pom.xml and resolved technical debt/visibility issues across the service layer.
+- **Telemetry Optimization:** Synchronized telemetry services to provide precise data windows for AI analytics.
+- **UI Refinement:** Upgraded Login and Tracking HUDs with glassmorphic aesthetics and real-time operational overlays.
+
 ## [1.2.0] - 2026-04-03
 ### Added
 - **Mass Data Seeding Engine:** Overhauled DataInitializer to generate 30+ vehicles and 22+ drivers with unique Sri Lankan identities.
