@@ -2,6 +2,9 @@ package com.optitrack.service.impl;
 
 import com.optitrack.model.entity.TelemetryEvent;
 import com.optitrack.repository.TelemetryEventRepository;
+import com.optitrack.repository.VehicleRepository;
+import com.optitrack.repository.DriverProfileRepository;
+import com.optitrack.repository.ScorecardRepository;
 import com.optitrack.service.TelemetryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,9 +17,9 @@ import java.time.LocalDateTime;
 public class TelemetryServiceImpl implements TelemetryService {
 
     private final TelemetryEventRepository telemetryRepository;
-    private final com.optitrack.repository.VehicleRepository vehicleRepository;
-    private final com.optitrack.repository.DriverProfileRepository driverRepository;
-    private final com.optitrack.repository.ScorecardRepository scorecardRepository;
+    private final VehicleRepository vehicleRepository;
+    private final DriverProfileRepository driverRepository;
+    private final ScorecardRepository scorecardRepository;
 
     @Override
     public TelemetryEvent recordEvent(TelemetryEvent event) {
@@ -40,19 +43,27 @@ public class TelemetryServiceImpl implements TelemetryService {
 
     @Override
     public List<TelemetryEvent> getRecentIncidents() {
-        // Return incidents from the last 1 minute (for polling)
         LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
         return telemetryRepository.findAll().stream()
-                .filter(e -> e.getIsHarshBraking() && e.getRecordedAt().isAfter(oneMinuteAgo))
+                .filter(e -> e.getIsHarshBraking() != null && e.getIsHarshBraking() && e.getRecordedAt().isAfter(oneMinuteAgo))
                 .collect(java.util.stream.Collectors.toList());
     }
 
     @Override
     public long getVehicleCount() { return vehicleRepository.count(); }
+    
     @Override
     public long getDriverCount() { return driverRepository.count(); }
+    
     @Override
     public long getScorecardCount() { return scorecardRepository.count(); }
+    
     @Override
     public long getEventCount() { return telemetryRepository.count(); }
+
+    @Override
+    public List<TelemetryEvent> getLatestEvents(Long vehicleId, int limit) {
+        List<TelemetryEvent> events = telemetryRepository.findByVehicleIdOrderByRecordedAtDesc(vehicleId);
+        return events.size() > limit ? events.subList(0, limit) : events;
+    }
 }

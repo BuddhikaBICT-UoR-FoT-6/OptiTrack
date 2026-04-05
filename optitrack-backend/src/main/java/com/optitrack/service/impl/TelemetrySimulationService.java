@@ -5,17 +5,22 @@ import com.optitrack.model.entity.TelemetryEvent;
 import com.optitrack.model.entity.Vehicle;
 import com.optitrack.repository.DriverProfileRepository;
 import com.optitrack.repository.TelemetryEventRepository;
+import com.optitrack.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
- * Purpose: Simulates real-time IoT telemetry from the fleet.
+ * Purpose: Simulates real-time IoT telemetry from the entire fleet.
+ * Mimics ESP32 data streaming with persistent movement across Sri Lanka.
+ * Hardened against legacy "New York" coordinates.
  */
 @Service
 @RequiredArgsConstructor
@@ -23,68 +28,86 @@ import java.util.Random;
 public class TelemetrySimulationService {
 
     private final DriverProfileRepository driverProfileRepository;
+    private final VehicleRepository vehicleRepository;
     private final TelemetryEventRepository telemetryRepository;
     private final Random random = new Random();
 
-    private static final double BASE_LAT = 7.8731;
-    private static final double BASE_LON = 80.7718;
+    private final Map<Long, double[]> vehicleLocations = new HashMap<>();
 
-    @Scheduled(fixedRate = 5000)
+    // Sri Lanka Bounds approx: Lat [6.0, 9.5], Lon [79.7, 81.8]
+    private static final double MIN_LAT = 6.0;
+    private static final double MAX_LAT = 9.5;
+    private static final double MIN_LON = 79.7;
+    private static final double MAX_LON = 81.8;
+
+    @Scheduled(fixedRate = 4000)
     public void simulateFleetActivity() {
-        log.info("🔥 [OPTI-SIM] Ignition! Heartbeat cycle starting...");
         triggerSimulation();
     }
 
     @org.springframework.transaction.annotation.Transactional
     public void triggerSimulation() {
-        List<DriverProfile> activeDrivers = driverProfileRepository.findAll();
-        if (activeDrivers.isEmpty()) {
-            log.warn("⚠️ [OPTI-SIM] No active driver assignments found for simulation!");
-            return;
-        }
+        List<Vehicle> allVehicles = vehicleRepository.findAll();
+        List<DriverProfile> allDrivers = driverProfileRepository.findAll();
+        
+        if (allVehicles.isEmpty()) return;
 
-        for (DriverProfile driver : activeDrivers) {
-            Vehicle vehicle = driver.getAssignedVehicle();
-            if (vehicle == null) continue;
+        for (Vehicle vehicle : allVehicles) {
+            DriverProfile driver = allDrivers.stream()
+                    .filter(dr -> dr.getAssignedVehicle() != null && dr.getAssignedVehicle().getId().equals(vehicle.getId()))
+                    .findFirst()
+                    .orElse(null);
 
-            // 1. Simulate Movement & Random Incidents
-            double latOffset = (random.nextDouble() - 0.5) * 0.005;
-            double lonOffset = (random.nextDouble() - 0.5) * 0.005;
-            
-            double speed = 40 + random.nextDouble() * 60;
-            boolean isHarshBraking = random.nextDouble() < 0.1; // 10% chance
-            if (isHarshBraking) speed = 5.0; // Sudden stop simulation
+            // 1. HARD RESET: Ensure no vehicle is initialized outside SL (NY Correction)
+            double[] currentPos = vehicleLocations.get(vehicle.getId());
+            if (currentPos == null) {
+                // Check latest in DB first
+                TelemetryEvent latest = telemetryRepository.findFirstByVehicleIdOrderByRecordedAtDesc(vehicle.getId()).orElse(null);
+                if (latest != null && isWithinSriLanka(latest.getGpsLatitude(), latest.getGpsLongitude())) {
+                    currentPos = new double[]{latest.getGpsLatitude(), latest.getGpsLongitude()};
+                } else {
+                    // Random SL placement if legacy data is in NY or missing
+                    currentPos = new double[]{
+                        MIN_LAT + random.nextDouble() * (MAX_LAT - MIN_LAT),
+                        MIN_LON + random.nextDouble() * (MAX_LON - MIN_LON)
+                    };
+                }
+                vehicleLocations.put(vehicle.getId(), currentPos);
+            }
 
-            // 2. Simulate Fuel Consumption
-            double fuel = 15 + random.nextDouble() * 85; 
+            // 2. Persistent Movement
+            double moveSpeed = 0.0005 + random.nextDouble() * 0.001; 
+            double angle = random.nextDouble() * 2 * Math.PI; 
             
-            // 3. Simulate Engine Temperature (70-95°C normal, can spike to 110 under stress)
-            double engineTemp = 70 + (speed / 100) * 20 + random.nextDouble() * 10;
-            
-            // 4. Simulate Vibration (0-10 scale, higher at extreme speeds or harsh braking)
-            double vibration = (speed / 100) * 5 + (isHarshBraking ? 8 : 0) + random.nextDouble() * 2;
-            vibration = Math.min(10.0, vibration); // Cap at 10
+            currentPos[0] += moveSpeed * Math.cos(angle);
+            currentPos[1] += moveSpeed * Math.sin(angle);
+
+            // Strict Boundary Enforcement
+            if (currentPos[0] < MIN_LAT || currentPos[0] > MAX_LAT) currentPos[0] = MIN_LAT + random.nextDouble() * (MAX_LAT - MIN_LAT);
+            if (currentPos[1] < MIN_LON || currentPos[1] > MAX_LON) currentPos[1] = MIN_LON + random.nextDouble() * (MAX_LON - MIN_LON);
+
+            // 3. Operational Metrics
+            double speed = 30 + random.nextDouble() * 50;
+            boolean isHarshBraking = random.nextDouble() < 0.03;
 
             TelemetryEvent event = TelemetryEvent.builder()
                     .vehicle(vehicle)
                     .driverProfile(driver)
-                    .gpsLatitude(BASE_LAT + latOffset)
-                    .gpsLongitude(BASE_LON + lonOffset)
+                    .gpsLatitude(currentPos[0])
+                    .gpsLongitude(currentPos[1])
                     .speedKph(speed)
-                    .fuelLevel(fuel)
-                    .engineTemp(engineTemp)
-                    .vibrationLevel(vibration)
+                    .fuelLevel(20 + random.nextDouble() * 80)
+                    .engineTemp(80 + random.nextDouble() * 15)
+                    .vibrationLevel(random.nextDouble() * 5)
                     .isHarshBraking(isHarshBraking)
                     .recordedAt(LocalDateTime.now())
                     .build();
 
             telemetryRepository.save(event);
-            
-            log.info("📡 HEARTBEAT: Telemetry recorded for unit {} | Speed: {} kph", vehicle.getLicensePlate(), String.format("%.1f", speed));
-
-            if (isHarshBraking) {
-                log.warn("⚠️ INCIDENT: Harsh Braking detected for unit {}", vehicle.getLicensePlate());
-            }
         }
+    }
+
+    private boolean isWithinSriLanka(double lat, double lon) {
+        return lat >= 5.5 && lat <= 10.0 && lon >= 79.0 && lon <= 82.5;
     }
 }
