@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -82,10 +81,6 @@ public class PredictiveMaintenanceAnalyzerImpl implements PredictiveMaintenanceA
         else if (harshBrakingRate > 0.05) score += 6;
 
         // 4. Speed Consistency (0-10 points - high speed variations indicate stress)
-        double avgSpeed = recentEvents.stream()
-            .mapToDouble(TelemetryEvent::getSpeedKph)
-            .average()
-            .orElse(50.0);
         double speedStdDev = calculateStdDev(
             recentEvents.stream().mapToDouble(TelemetryEvent::getSpeedKph).toArray()
         );
@@ -211,7 +206,6 @@ public class PredictiveMaintenanceAnalyzerImpl implements PredictiveMaintenanceA
         return "LOW";
     }
 
-    @SuppressWarnings("unchecked")
     private List<String> generateRecommendations(Map<String, Object> insights) {
         List<String> recommendations = new ArrayList<>();
         double probability = (Double) insights.get("maintenanceProbability");

@@ -1,7 +1,6 @@
 package com.optitrack.service;
 
 import com.optitrack.model.entity.TelemetryEvent;
-import com.optitrack.model.entity.Vehicle;
 import java.util.List;
 import java.util.Map;
 

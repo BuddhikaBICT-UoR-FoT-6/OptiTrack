@@ -1,6 +1,5 @@
 package com.optitrack.service;
 
-import com.optitrack.model.entity.DriverProfile;
 import java.util.List;
 import java.util.Map;
 
