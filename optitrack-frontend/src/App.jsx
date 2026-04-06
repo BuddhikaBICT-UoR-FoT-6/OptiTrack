@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Fleet from './pages/Fleet';
@@ -17,6 +18,30 @@ const App = () => {
 
   return (
     <Router>
+      {/* Real-time Global Notifications */}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          className: 'ot-toast',
+          style: {
+            background: '#1e293b',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '16px',
+            fontSize: '14px',
+            fontWeight: '600',
+            padding: '16px 24px'
+          },
+          success: {
+            iconTheme: {
+              primary: '#3b82f6',
+              secondary: '#fff',
+            },
+          },
+        }} 
+      />
+      
       <AlertListener />
       <Routes>
         <Route

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
+import AIInsightsSidebar from '../components/AIInsightsSidebar';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -17,7 +18,13 @@ import {
     Phone,
     MessageCircle,
     User,
-    LocateFixed
+    LocateFixed,
+    Wind,
+    Droplets,
+    Thermometer,
+    Brain,
+    Cloudy,
+    X
 } from 'lucide-react';
 
 // Map Controller for programmatic movement
@@ -25,7 +32,7 @@ const MapController = ({ center }) => {
     const map = useMap();
     useEffect(() => {
         if (center) {
-            map.flyTo(center, 14, { // Increased zoom for Ratnapura focus
+            map.flyTo(center, 14, {
                 animate: true,
                 duration: 1.5
             });
@@ -41,7 +48,6 @@ const truckIcon = new L.Icon({
     iconAnchor: [20, 40],
 });
 
-// Ratnapura, Bandaranayake Road focus
 const TACTICAL_CENTER = { lat: 6.6828, lon: 80.3992, name: "Ratnapura Command Post" };
 
 const Tracking = () => {
@@ -49,6 +55,9 @@ const Tracking = () => {
     const [deliveries, setDeliveries] = useState([]);
     const [selectedVehicleId, setSelectedVehicleId] = useState(null);
     const [mapCenter, setMapCenter] = useState(null);
+    const [weather, setWeather] = useState(null);
+    const [activeHud, setActiveHud] = useState('weather'); // 'weather' or 'ai'
+    const mapRef = useRef(null);
 
     const fetchData = async () => {
         try {
@@ -58,8 +67,7 @@ const Tracking = () => {
                 api.get('/drivers')
             ]);
             
-            // Only hide MAINTENANCE vehicles; INACTIVE ones should still show last known pos if telemetry exists
-            const vehicles = vRes.data.filter(v => v.status !== 'MAINTENANCE');
+            const vehicles = vRes.data;
             setDeliveries(dRes.data);
             
             const telemetryPromises = vehicles.map(v => 
@@ -86,23 +94,42 @@ const Tracking = () => {
         }
     };
 
+    const fetchWeather = async (lat, lon) => {
+        try {
+            const res = await api.get(`/weather?lat=${lat}&lon=${lon}`);
+            setWeather(res.data);
+        } catch (error) {
+            console.error('Weather Sync Error:', error);
+        }
+    };
+
     useEffect(() => {
         fetchData();
-        const interval = setInterval(fetchData, 5000);
+        fetchWeather(TACTICAL_CENTER.lat, TACTICAL_CENTER.lon);
+        const interval = setInterval(fetchData, 4000);
         return () => clearInterval(interval);
     }, []);
 
     const handleVehicleSelect = (v) => {
         setSelectedVehicleId(v.id);
         setMapCenter([v.telemetry.gpsLatitude, v.telemetry.gpsLongitude]);
+        fetchWeather(v.telemetry.gpsLatitude, v.telemetry.gpsLongitude);
+        setActiveHud('ai'); // Switch to AI view when a vehicle is selected
+    };
+
+    const handleContact = (driverName) => {
+        alert(`Initiating secure encrypted comms with: ${driverName || 'Unit Hub'} 📞`);
+        if (mapRef.current) {
+            mapRef.current.closePopup();
+        }
     };
 
     const selectedVehicle = fleetData.find(v => v.id === selectedVehicleId);
 
     const getWeatherIcon = (temp) => {
-        if (temp > 30) return <Sun className="text-amber-400" size={16} />;
-        if (temp > 25) return <CloudRain className="text-blue-400" size={16} />;
-        return <CloudLightning className="text-purple-400" size={16} />;
+        if (temp > 30) return <Sun className="text-amber-400" size={24} />;
+        if (temp > 25) return <CloudRain className="text-blue-400" size={24} />;
+        return <CloudLightning className="text-purple-400" size={24} />;
     };
 
     return (
@@ -113,7 +140,8 @@ const Tracking = () => {
                 <div className="h-screen w-full z-0">
                     <MapContainer 
                         center={[TACTICAL_CENTER.lat, TACTICAL_CENTER.lon]} 
-                        zoom={13} 
+                        zoom={10} 
+                        ref={mapRef}
                         style={{ height: '100%', width: '100%', filter: 'invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%)' }}
                     >
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -128,71 +156,61 @@ const Tracking = () => {
                             <Popup>
                                 <div className="p-2 font-bold text-slate-900 flex items-center gap-2">
                                     <MapPin size={16} className="text-rose-500" />
-                                    {TACTICAL_CENTER.name} (Ratnapura Hub)
+                                    {TACTICAL_CENTER.name}
                                 </div>
                             </Popup>
                         </Marker>
 
-                        {deliveries.filter(d => !d.isDelivered).map(d => (
-                            <CircleMarker 
-                                key={d.id}
-                                center={[d.destinationLat, d.destinationLon]}
-                                radius={6}
-                                pathOptions={{ color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.6 }}
+                        {fleetData.map((v) => (
+                            <Marker 
+                                key={v.id}
+                                position={[v.telemetry.gpsLatitude, v.telemetry.gpsLongitude]}
+                                icon={truckIcon}
+                                eventHandlers={{
+                                    click: () => handleVehicleSelect(v),
+                                }}
                             >
                                 <Popup>
-                                    <div className="p-2">
-                                        <h4 className="font-bold text-slate-900">{d.packageName}</h4>
-                                        <p className="text-xs text-slate-500">{d.address}</p>
+                                    <div className="p-2 space-y-4 min-w-[180px]">
+                                        <div className="border-b border-slate-200 pb-2">
+                                            <h4 className="font-bold text-slate-900 text-sm">{v.licensePlate}</h4>
+                                            <p className="text-[10px] text-slate-500 font-medium">Operator: {v.driver?.fullName || 'IoT Automated Unit'}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button 
+                                                onClick={() => handleContact(v.driver?.fullName)}
+                                                className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex justify-center items-center gap-2 transition-all shadow-md"
+                                            >
+                                                <Phone size={14} />
+                                                <span className="text-[10px] font-bold">Call</span>
+                                            </button>
+                                            <button 
+                                                onClick={() => handleContact(v.driver?.fullName)}
+                                                className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg flex justify-center items-center gap-2 transition-all"
+                                            >
+                                                <MessageCircle size={14} />
+                                                <span className="text-[10px] font-bold">Msg</span>
+                                            </button>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 pt-1">
+                                            <LocateFixed size={10} className="text-blue-500" />
+                                            <span className="text-[9px] text-slate-400 font-mono">{v.telemetry.gpsLatitude.toFixed(4)}, {v.telemetry.gpsLongitude.toFixed(4)}</span>
+                                        </div>
                                     </div>
                                 </Popup>
-                            </CircleMarker>
-                        ))}
-
-                        {fleetData.map((v) => (
-                            <React.Fragment key={v.id}>
-                                {v.deliveries.filter(d => !d.isDelivered).slice(0, 1).map(d => (
-                                    <Polyline 
-                                        key={`route-${v.id}`}
-                                        positions={[
-                                            [v.telemetry.gpsLatitude, v.telemetry.gpsLongitude],
-                                            [d.destinationLat, d.destinationLon]
-                                        ]}
-                                        pathOptions={{ color: '#3b82f6', weight: 2, dashArray: '5, 10', opacity: 0.3 }}
-                                    />
-                                ))}
-
-                                <Marker 
-                                    position={[v.telemetry.gpsLatitude, v.telemetry.gpsLongitude]}
-                                    icon={truckIcon}
-                                    eventHandlers={{
-                                        click: () => handleVehicleSelect(v),
-                                    }}
-                                >
-                                    <Popup>
-                                        <div className="p-2">
-                                            <h4 className="font-bold text-slate-900">{v.licensePlate}</h4>
-                                            <p className="text-xs text-slate-700 font-medium">Driver: {v.driver?.fullName || 'Unassigned'}</p>
-                                            <div className="flex items-center gap-1 mt-1">
-                                                <LocateFixed size={10} className="text-blue-500" />
-                                                <span className="text-[10px] text-slate-500">{v.telemetry.gpsLatitude.toFixed(4)}, {v.telemetry.gpsLongitude.toFixed(4)}</span>
-                                            </div>
-                                        </div>
-                                    </Popup>
-                                </Marker>
-                            </React.Fragment>
+                            </Marker>
                         ))}
                     </MapContainer>
                 </div>
 
                 {/* Left Panel: Active Operations */}
                 <div className="absolute top-8 left-8 z-[1000] pointer-events-none">
-                    <div className="ot-card !bg-[#0f172a]/80 !backdrop-blur-2xl !p-5 border-blue-500/30 animate-in fade-in slide-in-from-left-4 pointer-events-auto w-72">
+                    <div className="ot-card !bg-[#0f172a]/80 !backdrop-blur-2xl !p-5 border-blue-500/30 animate-in fade-in slide-in-from-left-4 pointer-events-auto w-80">
                         <h2 className="text-white font-bold text-lg flex items-center gap-2 mb-4">
                             <Navigation className="text-blue-500" size={20} />
-                            Active Operations
+                            Active Fleet Ops ({fleetData.length})
                         </h2>
-                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
                             {fleetData.map(v => (
                                 <div 
                                     key={v.id}
@@ -204,19 +222,15 @@ const Tracking = () => {
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-white font-bold text-sm">{v.licensePlate}</span>
                                         <div className="flex items-center gap-1.5">
-                                            {getWeatherIcon(v.telemetry.engineTemp)}
-                                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                            <span className={`w-2 h-2 rounded-full animate-pulse ${v.status === 'MAINTENANCE' ? 'bg-amber-500' : 'bg-green-500'}`}></span>
                                         </div>
                                     </div>
-                                    <p className="text-[10px] text-slate-500 mb-1 flex items-center gap-1">
-                                        <User size={10} /> {v.driver?.fullName || 'Automated Unit'}
+                                    <p className="text-[10px] text-slate-400 mb-1 flex items-center gap-1">
+                                        <User size={10} className="text-blue-400" /> {v.driver?.fullName || 'IoT Automated Unit'}
                                     </p>
-                                    <p className="text-[9px] text-blue-400 mb-2 flex items-center gap-1 font-mono uppercase">
-                                        <MapPin size={8} /> {v.telemetry.gpsLatitude.toFixed(2)}N, {v.telemetry.gpsLongitude.toFixed(2)}E
-                                    </p>
-                                    <div className="flex justify-between text-[11px] text-slate-400">
-                                        <span className="flex items-center gap-1"><Gauge size={12}/> {v.telemetry.speedKph.toFixed(0)} kph</span>
-                                        <span className="flex items-center gap-1 font-bold text-emerald-400"><Fuel size={12}/> {v.telemetry.fuelLevel.toFixed(0)}%</span>
+                                    <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                                        <span>{v.telemetry.speedKph.toFixed(0)} KPH</span>
+                                        <span className={v.telemetry.fuelLevel < 20 ? 'text-rose-400' : 'text-emerald-400'}>{v.telemetry.fuelLevel.toFixed(0)}% FUEL</span>
                                     </div>
                                 </div>
                             ))}
@@ -224,9 +238,80 @@ const Tracking = () => {
                     </div>
                 </div>
 
-                {/* Bottom Panel: Expanded Intelligence */}
+                {/* Right Panel: Advanced HUD (Weather + AI) */}
+                <div className="absolute top-8 right-8 z-[1000] pointer-events-none flex flex-col gap-6">
+                    {/* HUD Switcher */}
+                    <div className="bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl p-1 pointer-events-auto flex self-end shadow-2xl">
+                        <button 
+                            onClick={() => setActiveHud('weather')}
+                            className={`px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeHud === 'weather' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}
+                        >
+                            <Cloudy size={14} />
+                            Atmospheric
+                        </button>
+                        <button 
+                            onClick={() => setActiveHud('ai')}
+                            disabled={!selectedVehicle}
+                            className={`px-4 py-2 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeHud === 'ai' ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-white disabled:opacity-30'}`}
+                        >
+                            <Brain size={14} />
+                            Predictive
+                        </button>
+                    </div>
+
+                    {activeHud === 'weather' ? (
+                        <div className="ot-card !bg-[#0f172a]/80 !backdrop-blur-2xl !p-6 border-indigo-500/30 animate-in fade-in slide-in-from-right-4 pointer-events-auto w-80">
+                            <div className="flex justify-between items-start mb-6">
+                                <div>
+                                    <h2 className="text-white font-bold text-lg tracking-tight uppercase">Live Weather</h2>
+                                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-1">
+                                        {weather?.name || 'SYNCING HUB...'}
+                                    </p>
+                                </div>
+                                {weather && getWeatherIcon(weather.main?.temp)}
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-slate-900/50 p-3 rounded-2xl border border-white/5">
+                                    <p className="text-[9px] text-slate-500 uppercase font-black mb-1 tracking-widest">Ambient</p>
+                                    <div className="flex items-center gap-2 text-white font-bold">
+                                        <Thermometer size={14} className="text-rose-400" />
+                                        {weather?.main?.temp?.toFixed(1) || '--'}°C
+                                    </div>
+                                </div>
+                                <div className="bg-slate-900/50 p-3 rounded-2xl border border-white/5">
+                                    <p className="text-[9px] text-slate-500 uppercase font-black mb-1 tracking-widest">Humidity</p>
+                                    <div className="flex items-center gap-2 text-white font-bold">
+                                        <Droplets size={14} className="text-blue-400" />
+                                        {weather?.main?.humidity || '--'}%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-4 bg-indigo-600/10 border border-indigo-500/20 p-4 rounded-2xl flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <Wind size={18} className="text-indigo-400" />
+                                    <div>
+                                        <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">Wind Velocity</p>
+                                        <p className="text-sm font-bold text-white">{weather?.wind?.speed?.toFixed(1) || '--'} m/s</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="animate-in fade-in slide-in-from-right-4 pointer-events-auto w-[360px]">
+                            <AIInsightsSidebar 
+                                type="predictive"
+                                entityId={selectedVehicleId}
+                                entityName={selectedVehicle?.licensePlate}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {/* Intelligence Overlay (Bottom) */}
                 {selectedVehicle && (
-                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-3xl px-8 pointer-events-none">
+                    <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-4xl px-8 pointer-events-none">
                         <div className="ot-card !bg-[#0f172a]/95 !backdrop-blur-2xl border-slate-700/50 shadow-2xl animate-in slide-in-from-bottom-8 pointer-events-auto">
                             <div className="flex justify-between items-start mb-6">
                                 <div className="flex items-center gap-6">
@@ -238,64 +323,54 @@ const Tracking = () => {
                                         <div className="flex items-center gap-3 mt-1">
                                             <p className="text-slate-400 text-sm flex items-center gap-1">
                                                 <User size={14} className="text-blue-400" />
-                                                {selectedVehicle.driver?.fullName || 'Autonomous Mode'}
+                                                {selectedVehicle.driver?.fullName || 'IoT Autonomous Stream'}
                                             </p>
                                             <span className="text-slate-700">|</span>
-                                            <div className="flex items-center gap-1.5">
-                                                <MapPin size={14} className="text-rose-500" />
-                                                <span className="text-xs text-slate-300 font-mono">{selectedVehicle.telemetry.gpsLatitude.toFixed(5)}, {selectedVehicle.telemetry.gpsLongitude.toFixed(5)}</span>
-                                            </div>
+                                            <span className="text-xs text-slate-500 font-mono">{selectedVehicle.telemetry.gpsLatitude.toFixed(5)}, {selectedVehicle.telemetry.gpsLongitude.toFixed(5)}</span>
                                         </div>
                                     </div>
                                 </div>
+                                <div className="flex gap-4">
+                                    <button 
+                                        onClick={() => setSelectedVehicleId(null)}
+                                        className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl transition-all border border-slate-700/50"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                    <button 
+                                        onClick={() => handleContact(selectedVehicle.driver?.fullName)}
+                                        className="p-3 bg-slate-800 hover:bg-slate-700 text-blue-400 rounded-xl transition-all border border-slate-700/50"
+                                    >
+                                        <Phone size={20} />
+                                    </button>
+                                    <button 
+                                        onClick={() => handleContact(selectedVehicle.driver?.fullName)}
+                                        className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all shadow-lg shadow-blue-600/20"
+                                    >
+                                        <MessageCircle size={20} />
+                                    </button>
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-6 mb-6">
+                            <div className="grid grid-cols-4 gap-4">
                                 <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/50">
-                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Operational Speed</p>
-                                    <p className="text-2xl font-bold text-white">{selectedVehicle.telemetry.speedKph.toFixed(1)} <span className="text-xs text-slate-600">KPH</span></p>
+                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Velocity</p>
+                                    <p className="text-xl font-bold text-white">{selectedVehicle.telemetry.speedKph.toFixed(1)} <span className="text-[10px] text-slate-600">KPH</span></p>
                                 </div>
                                 <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/50">
-                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Energy Level</p>
-                                    <p className="text-2xl font-bold text-emerald-400">{selectedVehicle.telemetry.fuelLevel.toFixed(0)}%</p>
+                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Fuel</p>
+                                    <p className="text-xl font-bold text-emerald-400">{selectedVehicle.telemetry.fuelLevel.toFixed(0)}%</p>
+                                </div>
+                                <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/50">
+                                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Temp</p>
+                                    <p className="text-xl font-bold text-blue-400">{selectedVehicle.telemetry.engineTemp.toFixed(1)}°C</p>
                                 </div>
                                 <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800/50 flex items-center justify-between">
                                     <div>
-                                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Environment</p>
-                                        <p className="text-2xl font-bold text-blue-400">{(selectedVehicle.telemetry.engineTemp - 40).toFixed(1)}°C</p>
+                                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Vibration</p>
+                                        <p className="text-xl font-bold text-indigo-400">{selectedVehicle.telemetry.vibrationLevel.toFixed(1)}</p>
                                     </div>
-                                    {getWeatherIcon(selectedVehicle.telemetry.engineTemp)}
-                                </div>
-                            </div>
-
-                            <div className="border-t border-slate-700/50 pt-4">
-                                <h4 className="text-white font-bold text-xs mb-3 flex items-center justify-between">
-                                    <span className="flex items-center gap-2 uppercase tracking-widest">
-                                        <Package size={14} className="text-blue-400" />
-                                        In-Transit Cargo
-                                    </span>
-                                    <span className="text-slate-600 text-[10px]">{selectedVehicle.deliveries.length} Packages</span>
-                                </h4>
-                                <div className="grid grid-cols-2 gap-3 max-h-[100px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {selectedVehicle.deliveries.length > 0 ? selectedVehicle.deliveries.map(d => (
-                                        <div key={d.id} className="p-3 bg-slate-800/30 rounded-xl border border-slate-800/50 flex justify-between items-center group hover:bg-slate-800/50 transition-all">
-                                            <div>
-                                                <p className="text-white font-bold text-[11px]">{d.packageName}</p>
-                                                <p className="text-[9px] text-slate-500">{d.address.substring(0, 20)}...</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <span className={`text-[8px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                                                    d.isDelivered ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                                }`}>
-                                                    {d.isDelivered ? 'Delivered' : 'En Route'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )) : (
-                                        <div className="col-span-2 text-center py-4 text-slate-500 text-[10px] italic">
-                                            No active assignments for this unit.
-                                        </div>
-                                    )}
+                                    <LocateFixed size={18} className="text-indigo-500" />
                                 </div>
                             </div>
                         </div>

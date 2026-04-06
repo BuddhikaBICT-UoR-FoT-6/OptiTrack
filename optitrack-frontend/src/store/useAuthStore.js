@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import api from '../api/axios';
 
-const useAuthStore = create((set) => ({
+const useAuthStore = create((set, get) => ({
     user: JSON.parse(localStorage.getItem('user')) || null,
     token: localStorage.getItem('token') || null,
     isAuthenticated: !!localStorage.getItem('token'),
@@ -38,6 +38,19 @@ const useAuthStore = create((set) => ({
         localStorage.removeItem('user');
         set({ user: null, token: null, isAuthenticated: false });
     },
+
+    /**
+     * Role-Based Access Control Helper
+     * @param {string} roleName - e.g. 'ROLE_ADMIN' or 'ROLE_USER'
+     */
+    hasRole: (roleName) => {
+        const user = get().user;
+        if (!user || !user.roles) return false;
+        // The backend roles are usually objects: { id: 1, name: "ROLE_ADMIN" }
+        return user.roles.some(role => 
+            (typeof role === 'string' ? role === roleName : role.name === roleName)
+        );
+    }
 }));
 
 export default useAuthStore;

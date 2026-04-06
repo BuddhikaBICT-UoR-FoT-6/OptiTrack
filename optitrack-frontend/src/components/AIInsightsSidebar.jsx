@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Brain, AlertTriangle, TrendingUp, CheckCircle, AlertCircle } from 'lucide-react';
+import { Brain, AlertTriangle, TrendingUp, CheckCircle, AlertCircle, Fuel, Navigation, Clock, Zap } from 'lucide-react';
 import api from '../api/axios';
 
 const AIInsightsSidebar = ({ type = 'maintenance', entityId, entityName }) => {
     const [insights, setInsights] = useState(null);
+    const [predictiveData, setPredictiveData] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -16,6 +17,14 @@ const AIInsightsSidebar = ({ type = 'maintenance', entityId, entityName }) => {
                     response = await api.get(`/telemetry/ai/maintenance/probability/${entityId}`);
                 } else if (type === 'fatigue') {
                     response = await api.get(`/telemetry/ai/fatigue/insights/${entityId}`);
+                } else if (type === 'predictive') {
+                    // Combine base telemetry AI with new predictive intelligence
+                    const [aiRes, predRes] = await Promise.all([
+                        api.get(`/telemetry/ai/maintenance/probability/${entityId}`),
+                        api.get(`/api/predictive/insights/${entityId}`)
+                    ]);
+                    response = aiRes;
+                    setPredictiveData(predRes.data);
                 }
 
                 setInsights(response.data);
@@ -28,7 +37,7 @@ const AIInsightsSidebar = ({ type = 'maintenance', entityId, entityName }) => {
 
         if (entityId) {
             fetchInsights();
-            const interval = setInterval(fetchInsights, 45000);
+            const interval = setInterval(fetchInsights, 30000); // 30s for predictive
             return () => clearInterval(interval);
         }
     }, [entityId, type]);
@@ -42,216 +51,113 @@ const AIInsightsSidebar = ({ type = 'maintenance', entityId, entityName }) => {
             case 'MEDIUM':
                 return <TrendingUp className="text-yellow-500" size={20} />;
             default:
-                return <CheckCircle className="text-green-500" size={20} />;
+                return <CheckCircle className="text-emerald-500" size={20} />;
         }
     };
 
     const getRiskLevelColor = (level) => {
         switch (level) {
-            case 'CRITICAL':
-                return 'text-red-500 bg-red-500/10';
-            case 'HIGH':
-                return 'text-orange-500 bg-orange-500/10';
-            case 'MEDIUM':
-                return 'text-yellow-500 bg-yellow-500/10';
-            default:
-                return 'text-green-500 bg-green-500/10';
+            case 'CRITICAL': return 'text-red-500 bg-red-500/10';
+            case 'HIGH': return 'text-orange-500 bg-orange-500/10';
+            case 'MEDIUM': return 'text-yellow-500 bg-yellow-500/10';
+            default: return 'text-emerald-500 bg-emerald-500/10';
         }
     };
 
     if (loading) {
         return (
-            <div className="bg-slate-900 rounded-lg p-4 min-h-60 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+            <div className="bg-[#0f172a]/50 backdrop-blur-xl border border-white/5 rounded-[32px] p-8 h-[400px] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500"></div>
             </div>
         );
     }
 
     if (!insights) {
         return (
-            <div className="bg-slate-900 rounded-lg p-4">
-                <p className="text-slate-400 text-sm">No insights available</p>
+            <div className="bg-[#0f172a]/50 backdrop-blur-xl border border-white/5 rounded-[32px] p-8">
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest text-center">Telemetry Stream Offline</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-slate-900 rounded-lg overflow-hidden border border-slate-800">
+        <div className="bg-[#0f172a]/50 backdrop-blur-2xl border border-white/5 rounded-[40px] overflow-hidden shadow-2xl animate-in fade-in duration-500">
             {/* Header */}
-            <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-4 flex items-center gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-lg">
-                    <Brain className="text-blue-400" size={20} />
+            <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 p-8 flex items-center gap-5 border-b border-white/5">
+                <div className="p-4 bg-blue-600/20 rounded-[20px] text-blue-400 border border-blue-500/20 shadow-xl shadow-blue-600/10">
+                    <Brain size={28} />
                 </div>
                 <div className="flex-1">
-                    <h3 className="text-white font-bold text-sm">AI Insights</h3>
-                    <p className="text-slate-400 text-xs">{entityName}</p>
+                    <h3 className="text-white font-black text-xl tracking-tighter uppercase">AI INTELLIGENCE</h3>
+                    <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] mt-1">{entityName}</p>
                 </div>
             </div>
 
             {/* Content */}
-            <div className="p-4 space-y-4">
-                {/* Vehicle/Driver Information */}
-                {(insights.vehicle || insights.lastVehicle) && (
-                    <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
-                        {insights.vehicle && (
-                            <div>
-                                <p className="text-xs text-slate-400 font-semibold uppercase mb-1">Vehicle</p>
-                                <p className="text-sm font-bold text-white">
-                                    {insights.vehicle.make} {insights.vehicle.model}
-                                </p>
-                                <p className="text-xs text-slate-400">
-                                    {insights.vehicle.licensePlate}
-                                </p>
+            <div className="p-8 space-y-8">
+                
+                {/* PREDICTIVE HUB OVERLAY */}
+                {type === 'predictive' && predictiveData && (
+                    <div className="space-y-6 animate-in slide-in-from-top-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-blue-600/10 border border-blue-500/20 rounded-3xl p-5 group hover:bg-blue-600/20 transition-all">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <Fuel size={18} className="text-blue-400" />
+                                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Endurance</p>
+                                </div>
+                                <p className="text-2xl font-black text-white">{predictiveData.fuelRunoutMinutes} <span className="text-[10px] text-slate-600 uppercase">Min</span></p>
                             </div>
-                        )}
-                        {insights.lastDriver && (
-                            <div className={insights.vehicle ? 'mt-2 pt-2 border-t border-slate-700' : ''}>
-                                <p className="text-xs text-slate-400 font-semibold uppercase mb-1">Last Driver</p>
-                                <p className="text-sm font-bold text-white">
-                                    {insights.lastDriver.fullName}
-                                </p>
-                                <p className="text-xs text-slate-400">
-                                    {insights.lastDriver.licenseNumber}
-                                </p>
+                            <div className="bg-indigo-600/10 border border-indigo-500/20 rounded-3xl p-5 group hover:bg-indigo-600/20 transition-all">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <Navigation size={18} className="text-indigo-400" />
+                                    <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Est. Range</p>
+                                </div>
+                                <p className="text-2xl font-black text-white">{predictiveData.estimatedRangeKm} <span className="text-[10px] text-slate-600 uppercase">KM</span></p>
                             </div>
-                        )}
-                        {insights.lastVehicle && (
-                            <div className="mt-2 pt-2 border-t border-slate-700">
-                                <p className="text-xs text-slate-400 font-semibold uppercase mb-1">Last Vehicle</p>
-                                <p className="text-sm font-bold text-white">
-                                    {insights.lastVehicle.make} {insights.lastVehicle.model}
-                                </p>
-                                <p className="text-xs text-slate-400">
-                                    {insights.lastVehicle.licensePlate}
-                                </p>
+                        </div>
+
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-[24px] p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <Zap size={18} className="text-emerald-400 fill-emerald-400" />
+                                <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em]">AI Route Optimization</h4>
                             </div>
-                        )}
+                            <p className="text-[11px] font-medium text-slate-300 leading-relaxed italic">
+                                "{predictiveData.aiRouteRecommendation}"
+                            </p>
+                        </div>
                     </div>
                 )}
 
-                {/* Risk Level Badge */}
-                <div className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                    <div className="flex items-center gap-2">
+                {/* Status HUD */}
+                <div className="flex items-center justify-between p-6 bg-white/[0.03] rounded-[24px] border border-white/5">
+                    <div className="flex items-center gap-4">
                         {getStatusIcon(insights.riskLevel)}
                         <div>
-                            <p className="text-xs text-slate-400">Status</p>
-                            <p className={`text-sm font-bold ${getRiskLevelColor(insights.riskLevel)}`}>
+                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Operational Risk</p>
+                            <p className={`text-sm font-black tracking-widest uppercase ${getRiskLevelColor(insights.riskLevel).split(' ')[0]}`}>
                                 {insights.riskLevel}
                             </p>
                         </div>
                     </div>
-                    {type === 'maintenance' && (
-                        <div className="text-right">
-                            <p className="text-xs text-slate-400">Probability</p>
-                            <p className="text-lg font-bold text-white">
-                                {insights.maintenanceProbability?.toFixed(0)}%
-                            </p>
-                        </div>
-                    )}
-                    {type === 'fatigue' && (
-                        <div className="text-right">
-                            <p className="text-xs text-slate-400">Fatigue</p>
-                            <p className="text-lg font-bold text-white">
-                                {insights.fatigueScore?.toFixed(0)}%
-                            </p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Key Metrics */}
-                <div className="space-y-2">
-                    <p className="text-xs font-bold text-slate-300 uppercase">Metrics</p>
-                    {type === 'maintenance' && (
-                        <>
-                            {insights.avgEngineTemp && (
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-slate-400">Avg Engine Temp</span>
-                                    <span className="text-white font-semibold">
-                                        {insights.avgEngineTemp.toFixed(1)}°C
-                                    </span>
-                                </div>
-                            )}
-                            {insights.avgVibration !== undefined && (
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-slate-400">Vibration Level</span>
-                                    <span className="text-white font-semibold">
-                                        {insights.avgVibration.toFixed(1)}/10
-                                    </span>
-                                </div>
-                            )}
-                            {insights.harshBrakingEvents !== undefined && (
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-slate-400">Harsh Braking</span>
-                                    <span className="text-white font-semibold">
-                                        {insights.harshBrakingEvents} events
-                                    </span>
-                                </div>
-                            )}
-                        </>
-                    )}
-
-                    {type === 'fatigue' && (
-                        <>
-                            {insights.totalIncidents !== undefined && (
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-slate-400">Total Incidents</span>
-                                    <span className="text-white font-semibold">
-                                        {insights.totalIncidents}
-                                    </span>
-                                </div>
-                            )}
-                            {insights.harshBrakingCount !== undefined && (
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-slate-400">Harsh Braking</span>
-                                    <span className="text-white font-semibold">
-                                        {insights.harshBrakingCount}
-                                    </span>
-                                </div>
-                            )}
-                            {insights.latestDashcamAnalysis && (
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-slate-400">Attention Level</span>
-                                    <span className={`font-semibold ${
-                                        insights.latestDashcamAnalysis.attentionLevel >= 80 ? 'text-green-400' :
-                                        insights.latestDashcamAnalysis.attentionLevel >= 60 ? 'text-yellow-400' :
-                                        'text-red-400'
-                                    }`}>
-                                        {insights.latestDashcamAnalysis.attentionLevel.toFixed(0)}%
-                                    </span>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-
-                {/* Recommendations */}
-                {insights.recommendations && insights.recommendations.length > 0 && (
-                    <div className="border-t border-slate-700 pt-4">
-                        <p className="text-xs font-bold text-slate-300 uppercase mb-2">Recommendations</p>
-                        <ul className="space-y-2">
-                            {insights.recommendations.slice(0, 3).map((rec, idx) => (
-                                <li key={idx} className="flex gap-2 text-xs">
-                                    <span className="text-blue-400 font-bold flex-shrink-0">→</span>
-                                    <span className="text-slate-300 leading-tight">{rec}</span>
-                                </li>
-                            ))}
-                        </ul>
+                    <div className="text-right">
+                        <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Confidence</p>
+                        <p className="text-2xl font-black text-white">
+                            {type === 'fatigue' ? insights.fatigueScore?.toFixed(0) : insights.maintenanceProbability?.toFixed(0)}%
+                        </p>
                     </div>
-                )}
+                </div>
 
-                {/* Latest Dashcam Alert */}
-                {type === 'fatigue' && insights.latestDashcamAnalysis?.alert && (
-                    <div className="bg-orange-500/10 border border-orange-500/30 rounded p-3 mt-4">
-                        <div className="flex items-start gap-2">
-                            <AlertCircle size={14} className="text-orange-500 mt-0.5 flex-shrink-0" />
-                            <div className="flex-1">
-                                <p className="text-xs font-bold text-orange-400 uppercase">
-                                    {insights.latestDashcamAnalysis.alert.replace(/_/g, ' ')}
-                                </p>
-                                <p className="text-xs text-slate-300 mt-1">
-                                    {insights.latestDashcamAnalysis.recommendation}
-                                </p>
-                            </div>
+                {/* Recommendations Stream */}
+                {insights.recommendations && insights.recommendations.length > 0 && (
+                    <div className="space-y-4">
+                        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-1">Strategic Directives</h4>
+                        <div className="space-y-3">
+                            {insights.recommendations.slice(0, 3).map((rec, idx) => (
+                                <div key={idx} className="flex gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl group hover:border-blue-500/20 transition-all">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 group-hover:scale-150 transition-transform" />
+                                    <p className="text-[11px] font-medium text-slate-300 leading-tight">{rec}</p>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 )}
