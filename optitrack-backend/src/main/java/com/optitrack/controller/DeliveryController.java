@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+import com.optitrack.service.PdfGeneratorService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+
 @RestController
 @RequestMapping("/api/deliveries")
 @RequiredArgsConstructor
@@ -16,6 +20,7 @@ import java.util.Map;
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
+    private final PdfGeneratorService pdfGeneratorService;
 
     @GetMapping
     public List<Delivery> getAllDeliveries() {
@@ -78,5 +83,18 @@ public class DeliveryController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Delivery> updateStatus(@PathVariable Long id, @RequestParam String status) {
         return ResponseEntity.ok(deliveryService.updateDeliveryStatus(id, status));
+    }
+
+    @GetMapping("/{id}/waybill")
+    public ResponseEntity<byte[]> downloadWaybill(@PathVariable Long id) {
+        Delivery delivery = deliveryService.getDeliveryById(id)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+        
+        byte[] pdfContent = pdfGeneratorService.generateWaybill(delivery, delivery.getCustomerSignature());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=waybill_" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfContent);
     }
 }
