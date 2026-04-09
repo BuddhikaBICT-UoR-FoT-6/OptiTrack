@@ -2,7 +2,7 @@
 
 All notable changes to the **OptiTrack** project will be documented in this file.
 
-## [2.0.0] - 2026-05-13
+## [2.0.0] - 2026-04-08
 ### Added
 - **Predictive Intelligence Core:** Implemented Gemini-backed route optimization and deterministic fuel forecasting engines.
 - **Digital Document Vault (e-Waybills):** Added high-fidelity PDF generation with customer e-signatures for secure custody transfer.
