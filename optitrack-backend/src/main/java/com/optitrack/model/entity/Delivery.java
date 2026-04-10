@@ -77,7 +77,7 @@ public class Delivery {
     private String invoiceNumber;
     
     @Lob
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String customerSignature; // Base64 Signature Image
 
     @ManyToOne(fetch = FetchType.LAZY)
