@@ -30,12 +30,12 @@ public class DriverFatigueAnalyzerImpl implements DriverFatigueAnalyzer {
 
     @Override
     public double calculateFatigueScore(Long driverId) {
-        // Get recent telemetry for this driver
-        List<TelemetryEvent> recentEvents = telemetryRepository.findAll().stream()
-            .filter(e -> e.getDriverProfile() != null && e.getDriverProfile().getId().equals(driverId))
-            .sorted(Comparator.comparing(TelemetryEvent::getRecordedAt).reversed())
-            .limit(100)
-            .toList();
+        // Get recent telemetry for this driver via optimized repository query
+        List<TelemetryEvent> recentEvents = telemetryRepository.findByDriverProfileIdOrderByRecordedAtDesc(driverId);
+        
+        if (recentEvents.size() > 100) {
+            recentEvents = recentEvents.subList(0, 100);
+        }
 
         if (recentEvents.isEmpty()) {
             return 0.0;
@@ -105,12 +105,12 @@ public class DriverFatigueAnalyzerImpl implements DriverFatigueAnalyzer {
             DriverProfile driver = driverOpt.get();
             insights.put("driverName", driver.getFullName());
             
-            // Get incident counts from recent telemetry
-            List<TelemetryEvent> recentEvents = telemetryRepository.findAll().stream()
-                .filter(e -> e.getDriverProfile() != null && e.getDriverProfile().getId().equals(driverId))
-                .sorted(Comparator.comparing(TelemetryEvent::getRecordedAt).reversed())
-                .limit(100)
-                .toList();
+            // Get incident counts from recent telemetry via optimized repository query
+            List<TelemetryEvent> recentEvents = telemetryRepository.findByDriverProfileIdOrderByRecordedAtDesc(driverId);
+            
+            if (recentEvents.size() > 100) {
+                recentEvents = recentEvents.subList(0, 100);
+            }
             
             long harshBrakingCount = recentEvents.stream()
                 .filter(TelemetryEvent::getIsHarshBraking)

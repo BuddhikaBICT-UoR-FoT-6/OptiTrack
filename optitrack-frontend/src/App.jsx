@@ -14,7 +14,7 @@ import AlertListener from './components/AlertListener';
 import useAuthStore from './store/useAuthStore';
 
 const App = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, hasRole } = useAuthStore();
 
   return (
     <Router>
@@ -42,7 +42,9 @@ const App = () => {
         }} 
       />
       
-      <AlertListener />
+      {isAuthenticated && (hasRole('ROLE_ADMIN') || hasRole('ROLE_DISPATCHER')) && (
+        <AlertListener />
+      )}
       <Routes>
         <Route
           path="/login"

@@ -44,9 +44,7 @@ public class TelemetryServiceImpl implements TelemetryService {
     @Override
     public List<TelemetryEvent> getRecentIncidents() {
         LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
-        return telemetryRepository.findAll().stream()
-                .filter(e -> e.getIsHarshBraking() != null && e.getIsHarshBraking() && e.getRecordedAt().isAfter(oneMinuteAgo))
-                .collect(java.util.stream.Collectors.toList());
+        return telemetryRepository.findByIsHarshBrakingTrueAndRecordedAtAfter(oneMinuteAgo);
     }
 
     @Override

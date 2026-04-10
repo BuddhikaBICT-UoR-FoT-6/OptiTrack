@@ -35,4 +35,10 @@ public interface TelemetryEventRepository extends JpaRepository<TelemetryEvent, 
      * Essential for AI performance analysis.
      */
     List<TelemetryEvent> findByDriverProfileIdOrderByRecordedAtDesc(Long driverId);
+
+    /**
+     * Fetches recent incidents for the alert engine.
+     * Prevents expensive and crash-prone 'findAll().stream()' operations.
+     */
+    List<TelemetryEvent> findByIsHarshBrakingTrueAndRecordedAtAfter(LocalDateTime time);
 }

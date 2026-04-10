@@ -8,31 +8,31 @@ const Sidebar = () => {
     const location = useLocation();
 
     const menuItems = [
-        { icon: <LayoutDashboard size={20} />, label: 'Overview', path: '/dashboard' },
-        { icon: <Truck size={20} />, label: 'Fleet', path: '/fleet' },
-        { icon: <Map size={20} />, label: 'Live Tracking', path: '/tracking' },
-        { icon: <Users size={20} />, label: 'Drivers', path: '/drivers' },
-        { icon: <Brain size={20} />, label: 'AI Insights', path: '/ai-insights' },
-        { icon: <Activity size={20} />, label: 'Analytics', path: '/analytics' },
-        { icon: <ShieldAlert size={20} />, label: 'Safety', path: '/safety' },
+        { icon: <LayoutDashboard size={18} />, label: 'Overview', path: '/dashboard' },
+        { icon: <Truck size={18} />, label: 'Fleet', path: '/fleet' },
+        { icon: <Map size={18} />, label: 'Live Tracking', path: '/tracking' },
+        { icon: <Users size={18} />, label: 'Drivers', path: '/drivers' },
+        { icon: <Brain size={18} />, label: 'AI Insights', path: '/ai-insights' },
+        { icon: <Activity size={18} />, label: 'Analytics', path: '/analytics' },
+        { icon: <ShieldAlert size={18} />, label: 'Safety', path: '/safety' },
     ];
 
     return (
         <aside className="ot-sidebar">
-            <div className="p-6">
-                <div className="flex items-center gap-3 px-2 mb-10 group cursor-default">
-                    <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform">
-                        <Truck size={24} />
+            <div className="p-4">
+                <div className="flex items-center gap-3 px-2 mb-6 group cursor-default">
+                    <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform">
+                        <Truck size={20} />
                     </div>
-                    <span className="text-white font-bold text-xl tracking-tight">OptiTrack</span>
+                    <span className="text-white font-bold text-lg tracking-tight">OptiTrack</span>
                 </div>
 
-                <nav className="space-y-1.5">
+                <nav className="space-y-1">
                     {menuItems.map((item, index) => (
                         <Link
                             key={index}
                             to={item.path}
-                            className={`ot-nav-link ${
+                            className={`ot-nav-link text-sm py-2.5 ${
                                 location.pathname === item.path ? 'ot-nav-link-active' : 'ot-nav-link-inactive'
                             }`}
                         >
@@ -45,16 +45,16 @@ const Sidebar = () => {
                 </nav>
             </div>
 
-            <div className="mt-auto p-6 pb-10 border-t border-slate-800/50">
-                <div className="px-4 py-4 mb-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
-                    <p className="text-[10px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Active Session</p>
-                    <p className="text-white text-sm font-medium truncate">{user?.username || 'Administrator'}</p>
+            <div className="mt-auto p-4 pb-20 border-t border-slate-800/50">
+                <div className="px-3 py-3 mb-3 bg-slate-800/30 rounded-xl border border-slate-700/30">
+                    <p className="text-[9px] text-slate-500 uppercase font-bold mb-0.5 tracking-widest">Active Session</p>
+                    <p className="text-white text-xs font-medium truncate">{user?.username || 'Administrator'}</p>
                 </div>
                 <button
                     onClick={logout}
-                    className="flex items-center gap-3 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all group"
+                    className="flex items-center gap-3 w-full px-3 py-2.5 text-red-400 hover:bg-red-500/10 rounded-xl transition-all group text-sm"
                 >
-                    <LogOut size={20} />
+                    <LogOut size={18} />
                     <span className="font-medium">Sign Out</span>
                 </button>
             </div>
