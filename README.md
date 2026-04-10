@@ -1,4 +1,4 @@
-# OptiTrack: Autonomous Logistics Ecosystem 🛡️ VIVA-READY 🛰️🤖
+# OptiTrack: Autonomous Logistics Ecosystem  🛡️🛰️🤖
 
 **OptiTrack** is a high-fidelity, AI-powered logistics management platform designed to revolutionize fleet operations and workforce performance. Built with a focus on real-time telemetry, predictive intelligence, and premium UI aesthetics, OptiTrack provides a comprehensive suite for modern logistical command centers.
 

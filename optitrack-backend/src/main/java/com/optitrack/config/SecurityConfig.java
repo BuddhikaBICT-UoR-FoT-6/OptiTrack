@@ -42,6 +42,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/vehicles/**").permitAll()
                         .requestMatchers("/api/deliveries/**").permitAll()
                         .requestMatchers("/api/telemetry/**").permitAll()
+                        .requestMatchers("/api/telemetry/ai/**").permitAll()
                         .requestMatchers("/api/scorecards/**").permitAll()
                         .requestMatchers("/api/performance/**").permitAll()
                         
@@ -79,10 +80,11 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "https://optitrack.azurewebsites.net",
                 "https://happy-tree-0e347f000.7.azurestaticapps.net",
-                "https://blue-field-016f9f900.7.azurestaticapps.net"
+                "https://blue-field-016f9f900.7.azurestaticapps.net",
+                "https://optitrack-api.azurewebsites.net"
         ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
