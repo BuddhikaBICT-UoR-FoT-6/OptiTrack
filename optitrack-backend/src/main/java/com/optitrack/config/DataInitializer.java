@@ -63,6 +63,17 @@ public class DataInitializer implements CommandLineRunner {
         admin.setRoles(Collections.singleton(roleRepository.findByName(RoleName.ROLE_ADMIN).get()));
         userRepository.save(admin);
 
+        // 2.5 Dispatcher (Tactical Access)
+        if (userRepository.findByUsername("dispatcher1").isEmpty()) {
+            User dispatcher = new User();
+            dispatcher.setUsername("dispatcher1");
+            dispatcher.setEmail("dispatch@optitrack.com");
+            dispatcher.setPassword(passwordEncoder.encode("dispatch123"));
+            dispatcher.setRoles(Collections.singleton(roleRepository.findByName(RoleName.ROLE_DISPATCHER).get()));
+            userRepository.save(dispatcher);
+            System.out.println("🛰️ [OPTI-SEED] Tactical Dispatcher account synchronized.");
+        }
+
         // 3. Mass Vehicle Seeding (25+)
         String[] makes = {"Toyota", "Isuzu", "Mitsubishi", "Freightliner", "Volvo", "Hino", "Tata"};
         String[] models = {"HiAce", "NPR", "Canter", "Cascadia", "VNL", "500 Series", "Prima"};

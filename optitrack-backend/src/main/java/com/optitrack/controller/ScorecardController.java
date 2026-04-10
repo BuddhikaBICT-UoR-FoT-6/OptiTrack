@@ -23,7 +23,15 @@ public class ScorecardController {
     @GetMapping("/driver/{driverId}/latest")
     public ResponseEntity<Scorecard> getLatestScorecard(@PathVariable Long driverId) {
         Scorecard latest = scorecardService.getLatestScorecard(driverId);
-        return latest != null ? ResponseEntity.ok(latest) : ResponseEntity.notFound().build();
+        if (latest == null) {
+            // Auto-generate a scorecard on first request so clients never get a 404
+            try {
+                latest = scorecardService.generateScorecard(driverId);
+            } catch (RuntimeException e) {
+                return ResponseEntity.notFound().build();
+            }
+        }
+        return ResponseEntity.ok(latest);
     }
 
     /**
