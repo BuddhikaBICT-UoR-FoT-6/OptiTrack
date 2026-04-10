@@ -45,7 +45,7 @@ const Sidebar = () => {
                 </nav>
             </div>
 
-            <div className="mt-auto p-6 border-t border-slate-800/50">
+            <div className="mt-auto p-6 pb-10 border-t border-slate-800/50">
                 <div className="px-4 py-4 mb-4 bg-slate-800/30 rounded-2xl border border-slate-700/30">
                     <p className="text-[10px] text-slate-500 uppercase font-bold mb-1 tracking-widest">Active Session</p>
                     <p className="text-white text-sm font-medium truncate">{user?.username || 'Administrator'}</p>
