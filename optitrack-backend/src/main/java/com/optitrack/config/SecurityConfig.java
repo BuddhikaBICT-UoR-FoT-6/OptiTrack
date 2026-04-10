@@ -78,7 +78,8 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "https://optitrack.azurewebsites.net",
-                "https://happy-tree-0e347f000.7.azurestaticapps.net"));
+                "https://happy-tree-0e347f000.7.azurestaticapps.net",
+                "https://blue-field-016f9f900.7.azurestaticapps.net"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers for demo stability
         configuration.setExposedHeaders(List.of("Authorization"));
