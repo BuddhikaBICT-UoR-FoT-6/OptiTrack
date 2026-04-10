@@ -70,13 +70,15 @@ const Login = () => {
                     <div className="flex bg-black/20 p-1.5 rounded-2xl mb-6 ring-1 ring-white/5">
                         <button 
                             onClick={() => setIsLogin(true)}
-                            className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all ${isLogin ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            disabled={loading}
+                            className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all ${isLogin ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'} disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             COMMAND SIGN-IN
                         </button>
                         <button 
                             onClick={() => setIsLogin(false)}
-                            className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all ${!isLogin ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                            disabled={loading}
+                            className={`flex-1 py-3 text-xs font-bold rounded-xl transition-all ${!isLogin ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'} disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             ENROLL CREW
                         </button>
@@ -91,7 +93,8 @@ const Login = () => {
                                     <input
                                         type="email"
                                         required
-                                        className="w-full pl-12 pr-4 py-3 bg-black/20 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600/40 transition-all text-sm"
+                                        disabled={loading}
+                                        className="w-full pl-12 pr-4 py-3 bg-black/20 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600/40 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                         placeholder="crew@optitrack.io"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -107,7 +110,8 @@ const Login = () => {
                                 <input
                                     type="text"
                                     required
-                                    className="w-full pl-12 pr-4 py-3 bg-black/20 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600/40 transition-all text-sm font-mono"
+                                    disabled={loading}
+                                    className="w-full pl-12 pr-4 py-3 bg-black/20 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600/40 transition-all text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"
                                     placeholder="admin_id"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
@@ -122,15 +126,17 @@ const Login = () => {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     required
-                                    className="w-full pl-12 pr-12 py-3 bg-black/20 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600/40 transition-all text-sm"
+                                    disabled={loading}
+                                    className="w-full pl-12 pr-12 py-3 bg-black/20 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-600/40 focus:border-blue-600/40 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                                 <button
                                     type="button"
+                                    disabled={loading}
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-400 transition-colors focus:outline-none"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-400 transition-colors focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed"
                                 >
                                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
