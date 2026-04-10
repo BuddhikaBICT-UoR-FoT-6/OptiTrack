@@ -40,6 +40,12 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        // Fast-exit if already seeded to prevent boot delays
+        if (userRepository.findByUsername(adminUsername).isPresent()) {
+            System.out.println("✅ [OPTI-SEED] System already synchronized. Skipping heavy initialization.");
+            return;
+        }
+
         System.out.println("🚀 [OPTI-SEED] Synchronizing Sri Lankan Logistics Values...");
         
         // 1. Roles
