@@ -49,6 +49,42 @@ const Fleet = () => {
         status: 'ACTIVE'
     });
 
+    const [isAddCargoOpen, setIsAddCargoOpen] = useState(false);
+    const [newCargo, setNewCargo] = useState({
+        packageName: '',
+        ownerName: '',
+        address: '',
+        priority: 'MEDIUM',
+        deliveryType: 'STANDARD',
+        destinationLat: 6.9271,
+        destinationLon: 79.8612
+    });
+
+    const handleAddCargo = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post('/deliveries', {
+                ...newCargo,
+                vehicle: { id: historyVehicle.id }
+            });
+            setIsAddCargoOpen(false);
+            setNewCargo({
+                packageName: '',
+                ownerName: '',
+                address: '',
+                priority: 'MEDIUM',
+                deliveryType: 'STANDARD',
+                destinationLat: 6.9271,
+                destinationLon: 79.8612
+            });
+            fetchVehicleHistory(historyVehicle);
+            toast.success('Cargo Commissioned Successfully 📦');
+        } catch (error) {
+            console.error('Failed to add cargo:', error);
+            toast.error('Logistics Error: Failed to commission cargo.');
+        }
+    };
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -336,9 +372,19 @@ const Fleet = () => {
                                         <p className="text-slate-500 text-[10px] uppercase font-bold tracking-[0.2em]">Operational logs for unit {historyVehicle?.licensePlate}</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setIsHistoryOpen(false)} className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
-                                    <X size={32} />
-                                </button>
+                                <div className="flex items-center gap-4">
+                                    {(hasRole('ROLE_ADMIN') || hasRole('ROLE_DISPATCHER')) && (
+                                        <button 
+                                            onClick={() => setIsAddCargoOpen(true)}
+                                            className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2"
+                                        >
+                                            <Plus size={16} /> Add New Cargo
+                                        </button>
+                                    )}
+                                    <button onClick={() => setIsHistoryOpen(false)} className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
+                                        <X size={32} />
+                                    </button>
+                                </div>
                             </div>
                             
                             <div className="flex-1 overflow-y-auto p-10 space-y-6 custom-scrollbar">
@@ -356,7 +402,9 @@ const Fleet = () => {
                                                     <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.2em]">{d.deliveryType} Operational Stream</p>
                                                 </div>
                                             </div>
-                                            <span className="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 text-[9px] font-black rounded-xl border border-emerald-500/20 uppercase tracking-widest">
+                                            <span className={`px-4 py-1.5 rounded-xl text-[9px] font-black border uppercase tracking-widest ${
+                                                d.status === 'DELIVERED' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                                            }`}>
                                                 {d.status}
                                             </span>
                                         </div>
@@ -397,6 +445,116 @@ const Fleet = () => {
                                     Terminate Manifest Access
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Add Cargo Modal */}
+                {isAddCargoOpen && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl animate-in fade-in duration-300">
+                        <div className="bg-[#0a0a0c] w-full max-w-lg rounded-[40px] border border-white/10 shadow-2xl p-10 scale-in-center">
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-2xl font-black tracking-tighter text-white uppercase flex items-center gap-3">
+                                    <Package size={24} className="text-blue-500" /> Cargo Assignment
+                                </h2>
+                                <button onClick={() => setIsAddCargoOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                                    <X size={32} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleAddCargo} className="space-y-5">
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Package Designation</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newCargo.packageName}
+                                        onChange={(e) => setNewCargo({ ...newCargo, packageName: e.target.value })}
+                                        placeholder="Electronic Components Batch-A"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-bold text-sm"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Consignee Name</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            value={newCargo.ownerName}
+                                            onChange={(e) => setNewCargo({ ...newCargo, ownerName: e.target.value })}
+                                            placeholder="John Doe"
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm font-bold"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Delivery Priority</label>
+                                        <select
+                                            value={newCargo.priority}
+                                            onChange={(e) => setNewCargo({ ...newCargo, priority: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm font-bold appearance-none"
+                                        >
+                                            <option value="LOW" className="bg-slate-900">Low Priority</option>
+                                            <option value="MEDIUM" className="bg-slate-900">Medium Priority</option>
+                                            <option value="HIGH" className="bg-slate-900">High Priority</option>
+                                            <option value="CRITICAL" className="bg-slate-900">Critical Priority</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Destination Address</label>
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newCargo.address}
+                                        onChange={(e) => setNewCargo({ ...newCargo, address: e.target.value })}
+                                        placeholder="123 Logistics Way, Colombo 03"
+                                        className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm font-bold"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Target Latitude</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            step="0.0001"
+                                            value={newCargo.destinationLat}
+                                            onChange={(e) => setNewCargo({ ...newCargo, destinationLat: parseFloat(e.target.value) })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm font-mono"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Target Longitude</label>
+                                        <input
+                                            required
+                                            type="number"
+                                            step="0.0001"
+                                            value={newCargo.destinationLon}
+                                            onChange={(e) => setNewCargo({ ...newCargo, destinationLon: parseFloat(e.target.value) })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm font-mono"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAddCargoOpen(false)}
+                                        className="flex-1 py-4 bg-white/5 hover:bg-white/10 rounded-2xl font-black text-[10px] tracking-widest uppercase transition-all"
+                                    >
+                                        Abort
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 py-4 bg-blue-600 hover:bg-blue-500 rounded-2xl font-black text-[10px] tracking-widest uppercase transition-all shadow-lg shadow-blue-600/30"
+                                    >
+                                        Commission Cargo
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 )}
