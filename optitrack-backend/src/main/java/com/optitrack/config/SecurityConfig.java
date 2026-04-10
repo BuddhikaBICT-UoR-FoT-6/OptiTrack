@@ -79,9 +79,10 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "https://optitrack.azurewebsites.net",
                 "https://happy-tree-0e347f000.7.azurestaticapps.net",
-                "https://blue-field-016f9f900.7.azurestaticapps.net"));
+                "https://blue-field-016f9f900.7.azurestaticapps.net"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers for demo stability
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
