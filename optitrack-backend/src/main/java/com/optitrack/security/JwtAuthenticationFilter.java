@@ -52,29 +52,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // header
         String token = extractTokenFromRequest(request);
 
-        // Step 2: Only proceed if a token was actually present and is cryptographically
-        // valid
-        if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+        // Step 2: Only proceed if a token was actually present and is cryptographically valid.
+        // CRITICAL: Wrap in try-catch — an expired or malformed token must NOT throw an
+        // exception, as Spring Security would convert that to a 403 even on public/permitAll routes.
+        if (StringUtils.hasText(token)) {
+            try {
+                if (jwtTokenProvider.validateToken(token)) {
+                    // Step 3: Extract the username from the verified token payload
+                    String username = jwtTokenProvider.getUsernameFromToken(token);
 
-            // Step 3: Extract the username from the verified token payload
-            String username = jwtTokenProvider.getUsernameFromToken(token);
+                    // Step 4: Load the full UserDetails (with roles) from the database
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // Step 4: Load the full UserDetails (with roles) from the database
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    // Step 5: Build a Spring Security authentication object
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null, // Credentials are null — the JWT itself is the proof
+                            userDetails.getAuthorities());
 
-            // Step 5: Build a Spring Security authentication object
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null, // Credentials are null — the JWT itself is the proof
-                    userDetails.getAuthorities());
+                    // Attach request metadata (IP address, session ID) to the auth object
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-            // Attach request metadata (IP address, session ID) to the auth object
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            // Step 6: Register the authenticated user in the SecurityContext for this
-            // request
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.debug("Authenticated user '{}' via JWT for URI: {}", username, request.getRequestURI());
+                    // Step 6: Register the authenticated user in the SecurityContext
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("Authenticated user '{}' via JWT for URI: {}", username, request.getRequestURI());
+                }
+            } catch (Exception e) {
+                // Token is expired or malformed — clear context and allow the request to
+                // proceed unauthenticated. PermitAll routes will still work normally.
+                log.warn("JWT validation failed for URI: {} — {}", request.getRequestURI(), e.getMessage());
+                SecurityContextHolder.clearContext();
+            }
         }
 
         // Step 7: Always pass the request to the next filter, whether authenticated or

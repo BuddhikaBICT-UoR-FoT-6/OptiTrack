@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { Truck, Activity, Users, AlertCircle } from 'lucide-react';
 import api from '../api/axios';
+import { cachedFetch } from '../utils/cache';
 
 const StatCard = ({ icon, label, value, color }) => (
     <div className="ot-stat-card group">
@@ -30,19 +31,18 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [vRes, dRes] = await Promise.all([
-                    api.get('/vehicles'),
-                    api.get('/drivers')
+                const [vehicles, drivers] = await Promise.all([
+                    cachedFetch(api, '/vehicles', 'vehicles', 30_000),
+                    cachedFetch(api, '/drivers', 'drivers', 30_000)
                 ]);
 
-                const vehicles = vRes.data;
                 const activeCount = vehicles.filter(v => v.status === 'ACTIVE').length;
                 const issuesCount = vehicles.filter(v => v.status === 'MAINTENANCE').length;
 
                 setStats({
                     vehicles: vehicles.length,
                     active: activeCount,
-                    drivers: dRes.data.length,
+                    drivers: drivers.length,
                     issues: issuesCount
                 });
             } catch (error) {

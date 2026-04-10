@@ -22,6 +22,7 @@ import MaintenanceGauge from '../components/MaintenanceGauge';
 import AIInsightsSidebar from '../components/AIInsightsSidebar';
 import useAuthStore from '../store/useAuthStore';
 import toast from 'react-hot-toast';
+import { cachedFetch, cache } from '../utils/cache';
 
 const Fleet = () => {
     const { hasRole } = useAuthStore();
@@ -88,14 +89,14 @@ const Fleet = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [vRes, dRes] = await Promise.all([
-                axios.get('/vehicles'),
-                axios.get('/drivers')
+            const [vData, dData] = await Promise.all([
+                cachedFetch(axios, '/vehicles', 'vehicles', 30_000),
+                cachedFetch(axios, '/drivers', 'drivers', 30_000)
             ]);
-            setVehicles(vRes.data);
-            setDrivers(dRes.data);
-            if (vRes.data.length > 0) {
-                const activeVehicle = vRes.data.find(v => v.status === 'ACTIVE') || vRes.data[0];
+            setVehicles(vData);
+            setDrivers(dData);
+            if (vData.length > 0) {
+                const activeVehicle = vData.find(v => v.status === 'ACTIVE') || vData[0];
                 setSelectedVehicleForAI(activeVehicle);
             }
         } catch (error) {
@@ -149,6 +150,7 @@ const Fleet = () => {
         if (!window.confirm('CRITICAL: Permanently decommission this asset?')) return;
         try {
             await axios.delete(`/vehicles/${id}`);
+            cache.invalidate('vehicles'); // bust cache after mutation
             fetchData();
             toast.success('Asset Decommissioned Successfully');
         } catch (error) {

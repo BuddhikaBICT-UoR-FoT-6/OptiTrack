@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, useMap 
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import api from '../api/axios';
+import { cachedFetch } from '../utils/cache';
 import { 
     Navigation, 
     Gauge, 
@@ -61,14 +62,12 @@ const Tracking = () => {
 
     const fetchData = async () => {
         try {
-            const [vRes, dRes, drRes] = await Promise.all([
-                api.get('/vehicles'),
-                api.get('/deliveries'),
-                api.get('/drivers')
+            const [vehicles, deliveries, drivers] = await Promise.all([
+                cachedFetch(api, '/vehicles', 'vehicles', 30_000),
+                cachedFetch(api, '/deliveries', 'deliveries', 30_000),
+                cachedFetch(api, '/drivers', 'drivers', 30_000)
             ]);
-            
-            const vehicles = vRes.data;
-            setDeliveries(dRes.data);
+            setDeliveries(deliveries);
             
             const telemetryPromises = vehicles.map(v => 
                 api.get(`/telemetry/latest/${v.id}`).catch(() => null)
@@ -79,12 +78,12 @@ const Tracking = () => {
                 .filter(r => r && r.data)
                 .map((r, index) => {
                     const vehicle = vehicles[index];
-                    const driver = drRes.data.find(dr => dr.assignedVehicle?.id === vehicle.id);
+                    const driver = drivers.find(dr => dr.assignedVehicle?.id === vehicle.id);
                     return {
                         ...vehicle,
                         telemetry: r.data,
                         driver: driver,
-                        deliveries: dRes.data.filter(d => d.vehicle.id === vehicle.id)
+                        deliveries: deliveries.filter(d => d.vehicle.id === vehicle.id)
                     };
                 });
             
