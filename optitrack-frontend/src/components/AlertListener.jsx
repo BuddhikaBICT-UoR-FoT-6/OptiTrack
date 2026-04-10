@@ -11,7 +11,8 @@ const AlertListener = () => {
             const res = await api.get('/telemetry/incidents/recent');
             const incidents = res.data;
 
-            incidents.forEach(incident => {
+            // Only process the top 3 most recent incidents to prevent HUD overload
+            incidents.slice(0, 3).forEach(incident => {
                 if (!lastAlertId.current.has(incident.id)) {
                     // Trigger a toast for the new incident
                     toast.custom((t) => (

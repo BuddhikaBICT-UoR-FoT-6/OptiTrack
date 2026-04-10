@@ -15,7 +15,8 @@ import {
     ChevronRight,
     Lock,
     Settings,
-    ShieldAlert
+    ShieldAlert,
+    X
 } from 'lucide-react';
 import MaintenanceGauge from '../components/MaintenanceGauge';
 import AIInsightsSidebar from '../components/AIInsightsSidebar';

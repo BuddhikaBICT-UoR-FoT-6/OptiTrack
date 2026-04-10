@@ -3,6 +3,7 @@ package com.optitrack.service.impl;
 import com.optitrack.model.entity.DriverProfile;
 import com.optitrack.model.entity.TelemetryEvent;
 import com.optitrack.model.entity.Vehicle;
+import com.optitrack.repository.DeliveryRepository;
 import com.optitrack.repository.DriverProfileRepository;
 import com.optitrack.repository.TelemetryEventRepository;
 import com.optitrack.repository.VehicleRepository;
@@ -29,9 +30,9 @@ public class TelemetrySimulationService {
 
     private final DriverProfileRepository driverProfileRepository;
     private final VehicleRepository vehicleRepository;
+    private final DeliveryRepository deliveryRepository;
     private final TelemetryEventRepository telemetryRepository;
     private final Random random = new Random();
-
     private final Map<Long, double[]> vehicleLocations = new HashMap<>();
 
     // Sri Lanka Bounds approx: Lat [6.0, 9.5], Lon [79.7, 81.8]
@@ -40,7 +41,7 @@ public class TelemetrySimulationService {
     private static final double MIN_LON = 79.7;
     private static final double MAX_LON = 81.8;
 
-    @Scheduled(fixedRate = 4000)
+    @Scheduled(fixedRate = 6000)
     public void simulateFleetActivity() {
         triggerSimulation();
     }
@@ -58,37 +59,47 @@ public class TelemetrySimulationService {
                     .findFirst()
                     .orElse(null);
 
-            // 1. HARD RESET: Ensure no vehicle is initialized outside SL (NY Correction)
+            // 1. Initial Placement
             double[] currentPos = vehicleLocations.get(vehicle.getId());
             if (currentPos == null) {
-                // Check latest in DB first
-                TelemetryEvent latest = telemetryRepository.findFirstByVehicleIdOrderByRecordedAtDesc(vehicle.getId()).orElse(null);
-                if (latest != null && isWithinSriLanka(latest.getGpsLatitude(), latest.getGpsLongitude())) {
-                    currentPos = new double[]{latest.getGpsLatitude(), latest.getGpsLongitude()};
-                } else {
-                    // Random SL placement if legacy data is in NY or missing
-                    currentPos = new double[]{
-                        MIN_LAT + random.nextDouble() * (MAX_LAT - MIN_LAT),
-                        MIN_LON + random.nextDouble() * (MAX_LON - MIN_LON)
-                    };
-                }
+                currentPos = new double[]{
+                    MIN_LAT + random.nextDouble() * (MAX_LAT - MIN_LAT),
+                    MIN_LON + random.nextDouble() * (MAX_LON - MIN_LON)
+                };
                 vehicleLocations.put(vehicle.getId(), currentPos);
             }
 
-            // 2. Persistent Movement
-            double moveSpeed = 0.0005 + random.nextDouble() * 0.001; 
-            double angle = random.nextDouble() * 2 * Math.PI; 
-            
-            currentPos[0] += moveSpeed * Math.cos(angle);
-            currentPos[1] += moveSpeed * Math.sin(angle);
+            // 2. Mission-Driven Movement (Towards Delivery Target)
+            var activeDelivery = deliveryRepository.findAll().stream()
+                    .filter(d -> d.getVehicle() != null && d.getVehicle().getId().equals(vehicle.getId()) && !d.getIsDelivered())
+                    .findFirst()
+                    .orElse(null);
 
-            // Strict Boundary Enforcement
-            if (currentPos[0] < MIN_LAT || currentPos[0] > MAX_LAT) currentPos[0] = MIN_LAT + random.nextDouble() * (MAX_LAT - MIN_LAT);
-            if (currentPos[1] < MIN_LON || currentPos[1] > MAX_LON) currentPos[1] = MIN_LON + random.nextDouble() * (MAX_LON - MIN_LON);
+            double targetLat, targetLon;
+            if (activeDelivery != null && activeDelivery.getDestinationLat() != null) {
+                targetLat = activeDelivery.getDestinationLat();
+                targetLon = activeDelivery.getDestinationLon();
+            } else {
+                // Return to Hub (Colombo default) if no active delivery
+                targetLat = 6.9271;
+                targetLon = 79.8612;
+            }
+
+            // Calculate Vector to Target
+            double deltaLat = targetLat - currentPos[0];
+            double deltaLon = targetLon - currentPos[1];
+            double distance = Math.sqrt(deltaLat * deltaLat + deltaLon * deltaLon);
+
+            // Move at practical speed (approx 40-70 km/h in coordinate units)
+            double moveStep = 0.0015; // Speed calibration for ground logistics
+            if (distance > moveStep) {
+                currentPos[0] += (deltaLat / distance) * moveStep;
+                currentPos[1] += (deltaLon / distance) * moveStep;
+            }
 
             // 3. Operational Metrics
-            double speed = 30 + random.nextDouble() * 50;
-            boolean isHarshBraking = random.nextDouble() < 0.03;
+            double speed = (distance > moveStep) ? (45 + random.nextDouble() * 25) : 0;
+            boolean isHarshBraking = random.nextDouble() < 0.02;
 
             TelemetryEvent event = TelemetryEvent.builder()
                     .vehicle(vehicle)
@@ -97,8 +108,8 @@ public class TelemetrySimulationService {
                     .gpsLongitude(currentPos[1])
                     .speedKph(speed)
                     .fuelLevel(20 + random.nextDouble() * 80)
-                    .engineTemp(80 + random.nextDouble() * 15)
-                    .vibrationLevel(random.nextDouble() * 5)
+                    .engineTemp(85 + random.nextDouble() * 10)
+                    .vibrationLevel(random.nextDouble() * 3)
                     .isHarshBraking(isHarshBraking)
                     .recordedAt(LocalDateTime.now())
                     .build();

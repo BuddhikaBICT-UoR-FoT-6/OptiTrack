@@ -21,7 +21,7 @@ const AIInsightsSidebar = ({ type = 'maintenance', entityId, entityName }) => {
                     // Combine base telemetry AI with new predictive intelligence
                     const [aiRes, predRes] = await Promise.all([
                         api.get(`/telemetry/ai/maintenance/probability/${entityId}`),
-                        api.get(`/api/predictive/insights/${entityId}`)
+                        api.get(`/predictive/insights/${entityId}`)
                     ]);
                     response = aiRes;
                     setPredictiveData(predRes.data);
