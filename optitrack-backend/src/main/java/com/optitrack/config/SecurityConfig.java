@@ -45,6 +45,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/telemetry/ai/**").permitAll()
                         .requestMatchers("/api/scorecards/**").permitAll()
                         .requestMatchers("/api/performance/**").permitAll()
+                        .requestMatchers("/api/weather/**").permitAll()
+                        .requestMatchers("/api/predictive/**").permitAll()
                         
                         // 2. Role-specific / Shared (Permit All for Demo)
                         .requestMatchers("/api/dispatcher/**").permitAll()
