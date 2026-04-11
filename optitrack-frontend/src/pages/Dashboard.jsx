@@ -31,10 +31,13 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [vehicles, drivers] = await Promise.all([
+                const [vehiclesData, driversData] = await Promise.all([
                     cachedFetch(api, '/vehicles', 'vehicles', 30_000),
                     cachedFetch(api, '/drivers', 'drivers', 30_000)
                 ]);
+
+                const vehicles = Array.isArray(vehiclesData) ? vehiclesData : [];
+                const drivers = Array.isArray(driversData) ? driversData : [];
 
                 const activeCount = vehicles.filter(v => v.status === 'ACTIVE').length;
                 const issuesCount = vehicles.filter(v => v.status === 'MAINTENANCE').length;

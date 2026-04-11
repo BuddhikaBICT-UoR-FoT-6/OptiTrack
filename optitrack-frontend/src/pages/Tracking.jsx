@@ -62,11 +62,16 @@ const Tracking = () => {
 
     const fetchData = async () => {
         try {
-            const [vehicles, deliveries, drivers] = await Promise.all([
+            const [vehiclesData, deliveriesData, driversData] = await Promise.all([
                 cachedFetch(api, '/vehicles', 'vehicles', 30_000),
                 cachedFetch(api, '/deliveries', 'deliveries', 30_000),
                 cachedFetch(api, '/drivers', 'drivers', 30_000)
             ]);
+            
+            const vehicles = Array.isArray(vehiclesData) ? vehiclesData : [];
+            const deliveries = Array.isArray(deliveriesData) ? deliveriesData : [];
+            const drivers = Array.isArray(driversData) ? driversData : [];
+            
             setDeliveries(deliveries);
             
             const telemetryPromises = vehicles.map(v => 
@@ -78,12 +83,12 @@ const Tracking = () => {
                 .filter(r => r && r.data)
                 .map((r, index) => {
                     const vehicle = vehicles[index];
-                    const driver = drivers.find(dr => dr.assignedVehicle?.id === vehicle.id);
+                    const driver = drivers.find(dr => dr.assignedVehicle?.id === vehicle?.id);
                     return {
                         ...vehicle,
                         telemetry: r.data,
                         driver: driver,
-                        deliveries: deliveries.filter(d => d.vehicle.id === vehicle.id)
+                        deliveries: deliveries.filter(d => d.vehicle?.id === vehicle?.id)
                     };
                 });
             

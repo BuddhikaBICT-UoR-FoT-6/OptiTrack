@@ -89,10 +89,12 @@ const Fleet = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [vData, dData] = await Promise.all([
+            const [vDataRaw, dDataRaw] = await Promise.all([
                 cachedFetch(axios, '/vehicles', 'vehicles', 30_000),
                 cachedFetch(axios, '/drivers', 'drivers', 30_000)
             ]);
+            const vData = Array.isArray(vDataRaw) ? vDataRaw : [];
+            const dData = Array.isArray(dDataRaw) ? dDataRaw : [];
             setVehicles(vData);
             setDrivers(dData);
             if (vData.length > 0) {
