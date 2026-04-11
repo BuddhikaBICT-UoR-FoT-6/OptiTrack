@@ -4,6 +4,8 @@ import com.optitrack.model.entity.Vehicle;
 import com.optitrack.repository.VehicleRepository;
 import com.optitrack.service.VehicleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -26,7 +28,7 @@ public class VehicleServiceImpl implements VehicleService {
     @Override
     public Vehicle getVehicleById(Long id) {
         return vehicleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Vehicle not found with ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found with ID: " + id));
     }
 
     @Override

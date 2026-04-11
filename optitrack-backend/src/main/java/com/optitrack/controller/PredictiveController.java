@@ -12,7 +12,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/predictive")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class PredictiveController {
 
     private final PredictiveIntelligenceService predictiveService;

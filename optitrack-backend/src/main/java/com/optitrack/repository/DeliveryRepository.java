@@ -10,4 +10,7 @@ import java.util.List;
 public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     List<Delivery> findByVehicleId(Long vehicleId);
     List<Delivery> findByIsDelivered(Boolean isDelivered);
+
+    /** Indexed query — replaces the previous findAll().stream().filter() full table scan */
+    List<Delivery> findByCustomerId(Long customerId);
 }

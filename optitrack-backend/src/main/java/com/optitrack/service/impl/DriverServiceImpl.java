@@ -4,6 +4,8 @@ import com.optitrack.model.entity.DriverProfile;
 import com.optitrack.repository.DriverProfileRepository;
 import com.optitrack.service.DriverService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,7 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public DriverProfile getDriverById(Long id) {
         return driverProfileRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Driver not found: " + id));
     }
 
     @Override

@@ -13,7 +13,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/drivers")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class DriverController {
 
     private final DriverService driverService;

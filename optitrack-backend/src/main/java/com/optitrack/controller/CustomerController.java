@@ -1,6 +1,7 @@
 package com.optitrack.controller;
 
 import com.optitrack.model.entity.Delivery;
+import com.optitrack.model.dto.request.DeliveryRequest;
 import com.optitrack.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class CustomerController {
 
     private final DeliveryService deliveryService;
@@ -22,7 +22,7 @@ public class CustomerController {
     }
 
     @PostMapping("/request")
-    public ResponseEntity<Delivery> requestDelivery(@RequestBody Delivery delivery) {
+    public ResponseEntity<Delivery> requestDelivery(@RequestBody DeliveryRequest delivery) {
         return ResponseEntity.ok(deliveryService.createDeliveryRequest(delivery));
     }
 

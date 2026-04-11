@@ -1,6 +1,7 @@
 package com.optitrack.controller;
 
 import com.optitrack.model.entity.Delivery;
+import com.optitrack.model.dto.request.DeliveryRequest;
 import com.optitrack.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,12 +12,13 @@ import java.util.Map;
 
 import com.optitrack.service.PdfGeneratorService;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/deliveries")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class DeliveryController {
 
     private final DeliveryService deliveryService;
@@ -40,7 +42,7 @@ public class DeliveryController {
     }
 
     @PostMapping
-    public ResponseEntity<Delivery> createDelivery(@RequestBody Delivery delivery) {
+    public ResponseEntity<Delivery> createDelivery(@RequestBody DeliveryRequest delivery) {
         return ResponseEntity.ok(deliveryService.createDeliveryRequest(delivery));
     }
 
@@ -88,7 +90,7 @@ public class DeliveryController {
     @GetMapping("/{id}/waybill")
     public ResponseEntity<byte[]> downloadWaybill(@PathVariable Long id) {
         Delivery delivery = deliveryService.getDeliveryById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found with ID: " + id));
         
         byte[] pdfContent = pdfGeneratorService.generateWaybill(delivery, delivery.getCustomerSignature());
 

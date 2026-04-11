@@ -9,6 +9,8 @@ import com.optitrack.repository.TelemetryEventRepository;
 import com.optitrack.ai.GeminiAnalyzer;
 import com.optitrack.service.ScorecardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,7 +29,7 @@ public class ScorecardServiceImpl implements ScorecardService {
     @Override
     public Scorecard generateScorecard(Long driverId) {
         DriverProfile driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Driver not found: " + driverId));
 
         // 1. Fetch recent telemetry (last 50 events)
         List<TelemetryEvent> events = telemetryRepository.findByDriverProfileIdOrderByRecordedAtDesc(driverId);

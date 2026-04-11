@@ -1,5 +1,6 @@
 package com.optitrack.service;
 
+import com.optitrack.model.dto.request.DeliveryRequest;
 import com.optitrack.model.entity.Delivery;
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +11,7 @@ public interface DeliveryService {
     List<Delivery> getDeliveriesByVehicle(Long vehicleId);
     List<Delivery> getDeliveriesByCustomer(Long customerId);
     
-    Delivery createDeliveryRequest(Delivery delivery);
+    Delivery createDeliveryRequest(DeliveryRequest request);
     Delivery updateDeliveryStatus(Long id, String status);
     
     boolean validateDelivery(Long id, String qrData, double lat, double lon);

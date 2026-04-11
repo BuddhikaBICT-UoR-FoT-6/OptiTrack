@@ -2,6 +2,7 @@ package com.optitrack.controller;
 
 import com.optitrack.model.entity.CashTransaction;
 import com.optitrack.model.entity.Delivery;
+import com.optitrack.model.dto.request.DeliveryRequest;
 import com.optitrack.repository.CashTransactionRepository;
 import com.optitrack.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +15,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/dispatcher")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class DispatcherController {
 
     private final DeliveryService deliveryService;
@@ -26,7 +26,7 @@ public class DispatcherController {
     }
 
     @PostMapping("/deliveries")
-    public ResponseEntity<Delivery> createDelivery(@RequestBody Delivery delivery) {
+    public ResponseEntity<Delivery> createDelivery(@RequestBody DeliveryRequest delivery) {
         return ResponseEntity.ok(deliveryService.createDeliveryRequest(delivery));
     }
 

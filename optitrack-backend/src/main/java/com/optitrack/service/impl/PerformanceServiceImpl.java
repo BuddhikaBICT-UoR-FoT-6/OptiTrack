@@ -8,6 +8,8 @@ import com.optitrack.repository.DriverProfileRepository;
 import com.optitrack.service.PerformanceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +29,11 @@ public class PerformanceServiceImpl implements PerformanceService {
     @Override
     public String getDriverInsights(Long driverId) {
         DriverProfile driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Driver not found: " + driverId));
         
+        if (driver.getAssignedVehicle() == null) {
+            return "No vehicle assigned to driver yet. Performance insights cannot be analyzed without driving history.";
+        }
         List<Delivery> history = deliveryRepository.findByVehicleId(driver.getAssignedVehicle().getId());
         return geminiAnalyzer.analyzeDriverProfile(driver, history);
     }
@@ -37,8 +42,11 @@ public class PerformanceServiceImpl implements PerformanceService {
     @Transactional
     public Map<String, Object> evaluateSalary(Long driverId) {
         DriverProfile driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new RuntimeException("Driver not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Driver not found: " + driverId));
 
+        if (driver.getAssignedVehicle() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Driver has no assigned vehicle");
+        }
         List<Delivery> history = deliveryRepository.findByVehicleId(driver.getAssignedVehicle().getId());
         
         double avgUserRating = history.stream()

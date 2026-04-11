@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import api from '../api/axios';
+import { cache } from '../utils/cache';
 
 const useAuthStore = create((set, get) => ({
-    user: JSON.parse(localStorage.getItem('user')) || null,
-    token: localStorage.getItem('token') || null,
-    isAuthenticated: !!localStorage.getItem('token'),
+    user: JSON.parse(sessionStorage.getItem('user')) || null,
+    token: sessionStorage.getItem('token') || null,
+    isAuthenticated: !!sessionStorage.getItem('token'),
     loading: false,
     error: null,
 
@@ -14,8 +15,8 @@ const useAuthStore = create((set, get) => ({
             const response = await api.post('/auth/login', credentials);
             const { token, ...userData } = response.data;
 
-            localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(userData));
+            sessionStorage.setItem('token', token);
+            sessionStorage.setItem('user', JSON.stringify(userData));
 
             set({
                 token,
@@ -34,8 +35,9 @@ const useAuthStore = create((set, get) => ({
     },
 
     logout: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        cache.invalidatePrefix(''); // Clear ALL cached API data on logout
         set({ user: null, token: null, isAuthenticated: false });
     },
 

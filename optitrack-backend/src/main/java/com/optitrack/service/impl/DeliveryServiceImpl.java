@@ -3,12 +3,19 @@ package com.optitrack.service.impl;
 import com.optitrack.model.entity.Delivery;
 import com.optitrack.model.enums.DeliveryStatus;
 import com.optitrack.model.enums.PaymentMethod;
+import com.optitrack.model.dto.request.DeliveryRequest;
+import com.optitrack.model.entity.User;
+import com.optitrack.model.entity.Vehicle;
+import com.optitrack.repository.UserRepository;
+import com.optitrack.repository.VehicleRepository;
 import com.optitrack.repository.DeliveryRepository;
 import com.optitrack.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -22,6 +29,8 @@ import java.util.UUID;
 public class DeliveryServiceImpl implements DeliveryService {
 
     private final DeliveryRepository deliveryRepository;
+    private final VehicleRepository vehicleRepository;
+    private final UserRepository userRepository;
 
     @Override
     public List<Delivery> getAllDeliveries() {
@@ -40,23 +49,44 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     public List<Delivery> getDeliveriesByCustomer(Long customerId) {
-        return deliveryRepository.findAll().stream()
-                .filter(d -> d.getCustomer() != null && d.getCustomer().getId().equals(customerId))
-                .toList();
+        return deliveryRepository.findByCustomerId(customerId);
     }
 
     @Override
     @Transactional
-    public Delivery createDeliveryRequest(Delivery delivery) {
-        delivery.setStatus(DeliveryStatus.PENDING);
-        delivery.setAssignedAt(LocalDateTime.now());
-        delivery.setQrCodeData("QR-" + System.currentTimeMillis());
-        delivery.setOtp(String.format("%06d", (int)(Math.random() * 1000000)));
-        
-        // Initial Document Numbers
-        delivery.setWaybillNumber("WB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        delivery.setInvoiceNumber("INV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        
+    public Delivery createDeliveryRequest(DeliveryRequest request) {
+        Vehicle vehicle = null;
+        if (request.getVehicle() != null && request.getVehicle().getId() != null) {
+            vehicle = vehicleRepository.findById(request.getVehicle().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Vehicle not found: " + request.getVehicle().getId()));
+        }
+
+        User customer = null;
+        if (request.getCustomer() != null && request.getCustomer().getId() != null) {
+            customer = userRepository.findById(request.getCustomer().getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Customer not found: " + request.getCustomer().getId()));
+        }
+
+        Delivery delivery = Delivery.builder()
+                .packageName(request.getPackageName())
+                .ownerName(request.getOwnerName())
+                .address(request.getAddress())
+                .priority(request.getPriority())
+                .deliveryType(request.getDeliveryType())
+                .destinationLat(request.getDestinationLat())
+                .destinationLon(request.getDestinationLon())
+                .advancePayment(request.getAdvancePayment() != null ? request.getAdvancePayment() : 0.0)
+                .totalPayment(request.getTotalPayment() != null ? request.getTotalPayment() : 0.0)
+                .vehicle(vehicle)
+                .customer(customer)
+                .status(DeliveryStatus.PENDING)
+                .assignedAt(LocalDateTime.now())
+                .qrCodeData("QR-" + System.currentTimeMillis())
+                .otp(String.format("%06d", (int)(Math.random() * 1000000)))
+                .waybillNumber("WB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .invoiceNumber("INV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .build();
+
         return deliveryRepository.save(delivery);
     }
 
@@ -64,7 +94,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional
     public Delivery updateDeliveryStatus(Long id, String status) {
         Delivery delivery = deliveryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found: " + id));
         delivery.setStatus(DeliveryStatus.valueOf(status));
         if (DeliveryStatus.DELIVERED.name().equals(status)) {
             delivery.setIsDelivered(true);
@@ -81,7 +111,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     public boolean validateDelivery(Long id, String qrData, double lat, double lon) {
         Delivery delivery = deliveryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found: " + id));
         
         if (!delivery.getQrCodeData().equals(qrData)) {
             log.warn("❌ [OPTI-LOGISTICS] QR Mismatch for delivery {}", id);
@@ -102,7 +132,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional
     public void submitRating(Long id, Double rating, String feedback) {
         Delivery delivery = deliveryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found: " + id));
         delivery.setUserRating(rating);
         delivery.setUserFeedback(feedback);
         deliveryRepository.save(delivery);
@@ -112,7 +142,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional
     public void submitSignature(Long id, String signatureBase64) {
         Delivery delivery = deliveryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found: " + id));
         delivery.setCustomerSignature(signatureBase64);
         
         // Finalize document numbers if not set
@@ -128,7 +158,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional
     public void processPayment(Long id, String method, double amount) {
         Delivery delivery = deliveryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found: " + id));
         
         delivery.setPaymentMethod(PaymentMethod.valueOf(method));
         if (delivery.getStatus() == DeliveryStatus.PENDING) {
@@ -149,7 +179,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Transactional
     public void cancelDelivery(Long id) {
         Delivery delivery = deliveryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found: " + id));
         
         delivery.setStatus(DeliveryStatus.CANCELLED);
         delivery.setCancellationFee(250.0);

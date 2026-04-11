@@ -61,11 +61,28 @@ const AlertListener = () => {
     };
 
     useEffect(() => {
-        const interval = setInterval(fetchIncidents, 3000); // Check every 3 seconds
-        return () => clearInterval(interval);
+        // Start polling immediately
+        fetchIncidents();
+        let interval = setInterval(fetchIncidents, 8000); // 8s is sufficient for incident detection
+
+        // Pause polling when the tab is hidden to prevent request pile-up
+        const handleVisibility = () => {
+            if (document.hidden) {
+                clearInterval(interval);
+            } else {
+                fetchIncidents(); // Immediate fetch on tab restore
+                interval = setInterval(fetchIncidents, 8000);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibility);
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', handleVisibility);
+        };
     }, []);
 
-    return <Toaster position="top-right" />;
+    return null;
 };
 
 export default AlertListener;
