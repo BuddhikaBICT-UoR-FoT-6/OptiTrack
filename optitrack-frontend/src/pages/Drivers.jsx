@@ -66,9 +66,10 @@ const Drivers = () => {
         try {
             setLoading(true);
             const response = await axios.get('/drivers');
-            setDrivers(response.data);
-            if (response.data.length > 0 && !selectedDriverForAI) {
-                setSelectedDriverForAI(response.data[0]);
+            const driversList = Array.isArray(response?.data) ? response.data : [];
+            setDrivers(driversList);
+            if (driversList.length > 0 && !selectedDriverForAI) {
+                setSelectedDriverForAI(driversList[0]);
             }
         } catch (error) {
             console.error('Failed to fetch drivers:', error);

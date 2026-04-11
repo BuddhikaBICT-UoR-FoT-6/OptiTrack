@@ -27,9 +27,10 @@ const Analytics = () => {
         const fetchInitialData = async () => {
             try {
                 const res = await api.get('/vehicles');
-                setVehicles(res.data);
-                if (res.data.length > 0) {
-                    setSelectedVehicle(res.data[0]);
+                const vehiclesList = Array.isArray(res?.data) ? res.data : [];
+                setVehicles(vehiclesList);
+                if (vehiclesList.length > 0) {
+                    setSelectedVehicle(vehiclesList[0]);
                 }
             } catch (err) {
                 console.error('Failed to fetch analytics data:', err);
@@ -46,11 +47,12 @@ const Analytics = () => {
         const fetchHistory = async () => {
             try {
                 const res = await api.get(`/telemetry/vehicle/${selectedVehicle.id}`);
+                const telemetryData = Array.isArray(res?.data) ? res.data : [];
                 // Format data for Recharts (show last 20 points)
-                const formattedData = res.data.slice(-20).map(event => ({
-                    time: new Date(event.recordedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    speed: parseFloat(event.speedKph.toFixed(1)),
-                    fuel: parseFloat(event.fuelLevel.toFixed(1))
+                const formattedData = telemetryData.slice(-20).map(event => ({
+                    time: event.recordedAt ? new Date(event.recordedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+                    speed: parseFloat((event.speedKph || 0).toFixed(1)),
+                    fuel: parseFloat((event.fuelLevel || 0).toFixed(1))
                 }));
                 setTelemetry(formattedData);
             } catch (err) {

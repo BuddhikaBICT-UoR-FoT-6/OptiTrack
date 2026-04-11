@@ -115,7 +115,7 @@ const Fleet = () => {
         setSelectedHistory([]);
         try {
             const res = await axios.get(`/deliveries/vehicle/${vehicle.id}`);
-            setSelectedHistory(res.data);
+            setSelectedHistory(Array.isArray(res?.data) ? res.data : []);
         } catch (error) {
             console.error('History fetch failed:', error);
             toast.error('Manifest Error: Failed to retrieve cargo history.');

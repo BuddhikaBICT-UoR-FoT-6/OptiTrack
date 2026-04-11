@@ -11,7 +11,7 @@ const Safety = () => {
         const fetchSafetyData = async () => {
             try {
                 const res = await api.get('/drivers');
-                const driverList = res.data;
+                const driverList = Array.isArray(res?.data) ? res.data : [];
                 
                 const scorecardPromises = driverList.map(d => 
                     api.get(`/scorecards/driver/${d.id}/latest`).catch(() => null)

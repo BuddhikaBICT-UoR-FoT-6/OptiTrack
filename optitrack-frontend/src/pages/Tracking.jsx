@@ -79,18 +79,17 @@ const Tracking = () => {
             );
             
             const results = await Promise.all(telemetryPromises);
-            const liveData = results
-                .filter(r => r && r.data)
-                .map((r, index) => {
-                    const vehicle = vehicles[index];
-                    const driver = drivers.find(dr => dr.assignedVehicle?.id === vehicle?.id);
-                    return {
-                        ...vehicle,
-                        telemetry: r.data,
-                        driver: driver,
-                        deliveries: deliveries.filter(d => d.vehicle?.id === vehicle?.id)
-                    };
-                });
+            const liveData = vehicles.map((vehicle, index) => {
+                const telemetryResult = results[index];
+                if (!telemetryResult || !telemetryResult.data) return null;
+                const driver = drivers.find(dr => dr.assignedVehicle?.id === vehicle?.id);
+                return {
+                    ...vehicle,
+                    telemetry: telemetryResult.data,
+                    driver: driver,
+                    deliveries: deliveries.filter(d => d.vehicle?.id === vehicle?.id)
+                };
+            }).filter(Boolean);
             
             setFleetData(liveData);
         } catch (error) {

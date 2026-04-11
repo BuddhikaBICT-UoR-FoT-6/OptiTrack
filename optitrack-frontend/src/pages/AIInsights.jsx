@@ -25,20 +25,23 @@ const AIInsights = () => {
                     api.get('/drivers')
                 ]);
 
-                setVehicles(vRes.data);
-                setDrivers(dRes.data);
+                const vehiclesList = Array.isArray(vRes?.data) ? vRes.data : [];
+                const driversList = Array.isArray(dRes?.data) ? dRes.data : [];
+
+                setVehicles(vehiclesList);
+                setDrivers(driversList);
 
                 // Set defaults
-                if (vRes.data.length > 0) {
-                    const activeVehicle = vRes.data.find(v => v.status === 'ACTIVE') || vRes.data[0];
+                if (vehiclesList.length > 0) {
+                    const activeVehicle = vehiclesList.find(v => v.status === 'ACTIVE') || vehiclesList[0];
                     setSelectedVehicle(activeVehicle);
                 }
-                if (dRes.data.length > 0) {
-                    setSelectedDriver(dRes.data[0]);
+                if (driversList.length > 0) {
+                    setSelectedDriver(driversList[0]);
                 }
 
                 // Fetch AI analysis for critical alerts
-                await analyzeCriticalAlerts(vRes.data, dRes.data);
+                await analyzeCriticalAlerts(vehiclesList, driversList);
             } catch (error) {
                 console.error('Failed to fetch data:', error);
             } finally {
@@ -53,13 +56,16 @@ const AIInsights = () => {
 
     const analyzeCriticalAlerts = async (vehList, drvList) => {
         try {
+            const safeVehList = Array.isArray(vehList) ? vehList : [];
+            const safeDrvList = Array.isArray(drvList) ? drvList : [];
+
             // Check vehicle maintenance with full insights
-            const maintenancePromises = vehList.map(v =>
+            const maintenancePromises = safeVehList.map(v =>
                 api.get(`/telemetry/ai/maintenance/probability/${v.id}`).catch(() => null)
             );
 
             const maintenanceInsights = await Promise.all(maintenancePromises);
-            const criticalVehicles = vehList
+            const criticalVehicles = safeVehList
                 .map((v, idx) => ({
                     vehicle: v,
                     score: maintenanceInsights[idx]?.data?.maintenanceProbability || 0,
@@ -72,12 +78,12 @@ const AIInsights = () => {
             setHighRiskVehicles(criticalVehicles);
 
             // Check driver fatigue with full insights
-            const fatiguePromises = drvList.map(d =>
+            const fatiguePromises = safeDrvList.map(d =>
                 api.get(`/telemetry/ai/fatigue/insights/${d.id}`).catch(() => null)
             );
 
             const fatigueInsights = await Promise.all(fatiguePromises);
-            const criticalDrivers = drvList
+            const criticalDrivers = safeDrvList
                 .map((d, idx) => ({
                     driver: d,
                     score: fatigueInsights[idx]?.data?.fatigueScore || 0,

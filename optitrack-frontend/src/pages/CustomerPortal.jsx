@@ -40,7 +40,8 @@ const CustomerPortal = () => {
             setLoading(true);
             const response = await api.get(`/deliveries/customer/${customerId}`);
             // Take the first active or latest delivery for demo
-            const activeShipment = response.data.find(d => d.status !== 'DELIVERED') || response.data[0];
+            const deliveries = Array.isArray(response?.data) ? response.data : [];
+            const activeShipment = deliveries.find(d => d.status !== 'DELIVERED') || deliveries[0];
             setShipment(activeShipment);
             if (activeShipment?.status === 'DELIVERED') {
                 setQrValidated(true);
