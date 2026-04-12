@@ -54,6 +54,7 @@ public class SecurityConfig {
                         // 3. System / WebSocket
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/debug/**").permitAll()
+                        .requestMatchers("/error").permitAll()
                         
                         // 4. Default Block
                         .anyRequest().authenticated() 
