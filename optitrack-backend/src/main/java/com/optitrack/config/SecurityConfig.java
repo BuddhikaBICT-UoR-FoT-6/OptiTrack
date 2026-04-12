@@ -76,14 +76,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://localhost:5173",
-                "https://optitrack.azurewebsites.net",
-                "https://happy-tree-0e347f000.7.azurestaticapps.net",
-                "https://blue-field-016f9f900.7.azurestaticapps.net",
-                "https://optitrack-api.azurewebsites.net"
-        ));
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("*"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
