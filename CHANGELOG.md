@@ -2,6 +2,18 @@
 
 All notable changes to the **OptiTrack** project will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [2.1.0] - 2026-07-20
+### Added
+- **Tactical UI Overhaul:** Replaced glassmorphism with a high-density, precision-engineered dark-mode tactical interface (`#090A0F`, `#00F0FF`, `#FF4D00`).
+- **PostgreSQL Migration:** Upgraded the backend data layer to natively support Azure Database for PostgreSQL (`org.postgresql.Driver`).
+- **Cloud Hardening:** Externalized `DB_URL` environment variables to support seamless Azure App Service deployments without startup crashes.
+
+### Fixed
+- **CORS Policy:** Whitelisted the Azure Static Web Apps frontend origin to securely interact with the backend API.
+
 ## [2.0.0] - 2026-04-08
 ### Added
 - **Predictive Intelligence Core:** Implemented Gemini-backed route optimization and deterministic fuel forecasting engines.
@@ -11,9 +23,9 @@ All notable changes to the **OptiTrack** project will be documented in this file
 - **System Documentation:** Architected high-fidelity Mermaid diagrams (ER, Architecture, Sequence) for technical documentation.
 
 ### Changed
-- **Architectural Hardening:** Standardized backend testing dependencies in pom.xml and resolved technical debt/visibility issues across the service layer.
+- **Architectural Hardening:** Standardized backend testing dependencies in `pom.xml` and resolved technical debt across the service layer.
 - **Telemetry Optimization:** Synchronized telemetry services to provide precise data windows for AI analytics.
-- **UI Refinement:** Upgraded Login and Tracking HUDs with glassmorphic aesthetics and real-time operational overlays.
+- **UI Refinement:** Upgraded Login and Tracking HUDs with real-time operational overlays.
 
 ## [1.2.0] - 2026-04-03
 ### Added
@@ -31,11 +43,11 @@ All notable changes to the **OptiTrack** project will be documented in this file
 ### Added
 - **AI Performance Analyst:** Integrated Google Gemini 1.5 Flash for automated driver behavior analysis.
 - **Safety Hub:** High-fidelity dashboard for risk profiling and AI-driven recommendations.
-- **Final Cleanup:** Hardened `.gitignore` and purged build artifacts from the repository.
 - **Production Config:** Finalized application properties with live AI activation.
 
 ### Changed
-- Finalized backend-frontend synchronization for all telemetry fields (gpsLatitude, gpsLongitude, speedKph).
+- Finalized backend-frontend synchronization for all telemetry fields (`gpsLatitude`, `gpsLongitude`, `speedKph`).
+- Hardened `.gitignore` and purged build artifacts from the repository.
 
 ## [0.8.0] - 2026-01-05
 ### Added
@@ -59,24 +71,3 @@ All notable changes to the **OptiTrack** project will be documented in this file
 - **Core Security:** Hardened CORS policy and externalized application properties.
 - **Data Models:** Established JPA entities for Drivers, Vehicles, and Telemetry.
 - **Repository Layer:** Added optimized JQL queries for history and scorecard lookups.
-
----
-
-### Commit History Reference (Atomic History)
-*   `39d138d` - chore: final repository cleanup and gitignore hardening
-*   `de2f2acf` - feat(ai): activate live Gemini AI analysis with official API key
-*   `386d6e2` - feat(ai): implement Gemini-powered driver performance analysis
-*   `dbee016` - feat: complete project with safety dashboard and system auto-seeding
-*   `180e151` - build: integrate tracking and analytics dependencies
-*   `755c50d` - feat(ui): add analytics hub with real-time performance charts
-*   `5e08ee8` - feat(ui): implement interactive live tracking map with HUD overlay
-*   `bb4a606` - feat(ui): build driver management dashboard with profile cards
-*   `a810757` - feat(ui): implement fleet management hub with live asset status
-*   `fe25a9a` - feat(ui): dynamicize dashboard with real-time telemetry polling
-*   `de5658c` - feat(ui): refactor navigation and register application routes
-*   `d342b41` - style: implement centralized semantic design system with manual animations
-*   `9c4e106` - feat(simulation): add real-time telemetry simulation engine
-*   `d90cece` - feat(service): implement telemetry business logic and controller endpoints
-*   `bfde2d5` - feat(repo): add optimized queries for scorecards and telemetry history
-*   `7c24f82` - feat(model): refine driver and telemetry entities for analytics
-*   `fa43471` - feat(security): externalize properties and harden CORS policy

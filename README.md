@@ -1,5 +1,10 @@
 # OptiTrack: Autonomous Logistics Ecosystem  🛡️🛰️🤖
 
+[![Build Status](https://img.shields.io/github/actions/workflow/status/BuddhikaBICT-UoR-FoT-6/OptiTrack/azure-static-web-apps-blue-field-016f9f900.yml?branch=main)](https://github.com/BuddhikaBICT-UoR-FoT-6/OptiTrack/actions)
+[![License](https://img.shields.io/github/license/BuddhikaBICT-UoR-FoT-6/OptiTrack)](./LICENSE)
+[![React](https://img.shields.io/badge/react-18.0.0-blue.svg)](https://reactjs.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
+
 **OptiTrack** is a high-fidelity, AI-powered logistics management platform designed to revolutionize fleet operations and workforce performance. Built with a focus on real-time telemetry, predictive intelligence, and premium UI aesthetics, OptiTrack provides a comprehensive suite for modern logistical command centers.
 
 ---
@@ -32,9 +37,9 @@
 | Layer | Technologies |
 | :--- | :--- |
 | **Frontend** | React, Tailwind CSS, Lucide Icons, Leaflet GIS, Recharts |
-| **Backend** | Spring Boot, Spring Security, JPA / Hibernate, H2/MySQL |
+| **Backend** | Spring Boot, Spring Security, JPA / Hibernate, Azure PostgreSQL |
 | **Intelligence** | Google Gemini 1.5 Flash AI API |
-| **Operations** | Real-time Telemetry Simulation, JWT Authentication |
+| **Operations** | Real-time Telemetry Simulation, JWT Authentication, GitHub Actions |
 
 ---
 
@@ -44,18 +49,20 @@
 - **JDK 17+**
 - **Node.js 18+**
 - **Google API Key** (Set in `application.properties` as `GOOGLE_API_KEY`)
+- **Azure PostgreSQL Database** (Configured via `DB_URL` environment variable)
 
 ### Installation
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-repo/optitrack.git
-   cd optitrack
+   git clone https://github.com/BuddhikaBICT-UoR-FoT-6/OptiTrack.git
+   cd OptiTrack
    ```
 
 2. **Backend Setup**
    ```bash
    cd optitrack-backend
+   # Ensure you have your local PostgreSQL running or pointed to Azure
    ./mvnw spring-boot:run
    ```
 
@@ -65,6 +72,16 @@
    npm install
    npm run dev
    ```
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 

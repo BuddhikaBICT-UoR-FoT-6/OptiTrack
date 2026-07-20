@@ -1,0 +1,24 @@
+# OptiTrack
+
+> A high-fidelity, AI-powered logistics management platform designed to revolutionize fleet operations and workforce performance.
+
+## Project Overview
+OptiTrack provides a comprehensive suite for modern logistical command centers, featuring real-time telemetry streaming, predictive intelligence for driver safety, and digital document vaults (e-Waybills).
+
+## Key Capabilities
+- **Tactical Tracking**: Live map interface (Leaflet) centered on Ratnapura, Sri Lanka, displaying speed, fuel, and weather overlays for a fleet of 30+ vehicles.
+- **AI Performance Analyst**: Uses Google Gemini 1.5 Flash to automatically evaluate driver performance and compute safety scorecards.
+- **Workforce Intelligence**: Generates automated merit-based salary reviews based on historical safety metrics.
+- **Real-Time Telemetry Engine**: Uses WebSocket (STOMP) broadcasting to stream simulated telemetry data for vehicles.
+
+## Technology Stack
+- **Frontend**: React 18, Vite, Tailwind CSS (High-density tactical dark mode), Leaflet GIS, Recharts.
+- **Backend**: Java 21, Spring Boot 3.2, Spring Security (JWT), Spring Data JPA.
+- **Database**: Azure Database for PostgreSQL.
+- **Cloud Infrastructure**: Azure Static Web Apps (Frontend) and Azure App Service (Backend) deployed via GitHub Actions.
+- **External APIs**: OpenWeatherMap API, Google Gemini 1.5 Flash API.
+
+## Repository Structure
+- `/optitrack-frontend/`: React single-page application and UI components.
+- `/optitrack-backend/`: Spring Boot REST API, business logic, AI integration, and telemetry simulation engine.
+- `/.github/workflows/`: CI/CD pipelines for automated Azure deployment.
