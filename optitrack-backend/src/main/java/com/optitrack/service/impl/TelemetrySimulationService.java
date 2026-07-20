@@ -70,7 +70,7 @@ public class TelemetrySimulationService {
         return cachedVehicles;
     }
 
-    @Scheduled(fixedRate = 6000)
+    @Scheduled(fixedRate = 60000)
     public void simulateFleetActivity() {
         triggerSimulation();
     }

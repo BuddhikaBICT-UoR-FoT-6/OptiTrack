@@ -27,4 +27,8 @@ public interface DriverProfileRepository extends JpaRepository<DriverProfile, Lo
 
     /** Checks if a license number is already registered. */
     Boolean existsByLicenseNumber(String licenseNumber);
+
+    /** Eliminates N+1 query problem by fetching related Lazy entities */
+    @org.springframework.data.jpa.repository.Query("SELECT d FROM DriverProfile d LEFT JOIN FETCH d.user LEFT JOIN FETCH d.assignedVehicle")
+    java.util.List<DriverProfile> findAll();
 }

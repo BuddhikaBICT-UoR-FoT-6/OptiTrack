@@ -23,4 +23,8 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
 
     /** Checks if a license plate is already registered in the fleet. */
     Boolean existsByLicensePlate(String licensePlate);
+
+    /** Eliminates N+1 query problem for the non-owning OneToOne side */
+    @org.springframework.data.jpa.repository.Query("SELECT v FROM Vehicle v LEFT JOIN FETCH v.assignedDriver")
+    List<Vehicle> findAll();
 }
