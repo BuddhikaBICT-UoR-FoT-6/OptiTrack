@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-[#0f172a] text-slate-200 antialiased selection:bg-blue-500/30;
+    @apply bg-tactical-bg text-slate-200 antialiased selection:bg-tactical-cyan/30 font-sans;
   }
 
   /* Manual Animation Definitions */
@@ -14,12 +14,12 @@
   }
 
   @keyframes slide-in-from-top {
-    from { transform: translateY(-1rem); }
+    from { transform: translateY(-0.5rem); }
     to { transform: translateY(0); }
   }
 
   .animate-in {
-    animation-duration: 700ms;
+    animation-duration: 200ms;
     animation-fill-mode: both;
     animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -36,24 +36,24 @@
 @layer components {
   /* Layout Components */
   .ot-page-container {
-    @apply flex-1 ml-64 p-8 min-h-screen transition-all duration-300;
+    @apply flex-1 ml-16 p-6 min-h-screen transition-all duration-200;
   }
 
   .ot-header {
-    @apply mb-10 animate-in fade-in slide-in-from-top-4;
+    @apply mb-8 animate-in fade-in slide-in-from-top-4;
   }
 
   .ot-title {
-    @apply text-3xl font-bold text-white mb-2 tracking-tight;
+    @apply text-2xl font-display font-bold text-white mb-1 tracking-tight;
   }
 
   .ot-subtitle {
-    @apply text-slate-400 text-base font-normal;
+    @apply text-tactical-cyan text-sm font-medium tracking-wide uppercase;
   }
 
-  /* Card Components */
+  /* Card Components (Tactical Grid) */
   .ot-card {
-    @apply bg-[#1e293b]/50 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 transition-all duration-300 hover:border-slate-700/50 hover:shadow-2xl hover:shadow-blue-500/5;
+    @apply bg-tactical-surface border border-tactical-border rounded-md p-5 transition-all duration-200 hover:border-tactical-cyan/50;
   }
 
   .ot-stat-card {
@@ -61,32 +61,32 @@
   }
 
   .ot-stat-icon-container {
-    @apply p-3 rounded-2xl bg-opacity-10 transition-transform duration-300;
+    @apply p-2 rounded-sm bg-tactical-bg border border-tactical-border text-tactical-cyan transition-colors duration-200;
   }
 
   .ot-stat-value {
-    @apply text-2xl font-bold text-white tracking-tight;
+    @apply text-3xl font-mono font-bold text-white tracking-tight;
   }
 
   .ot-stat-label {
-    @apply text-slate-400 text-sm font-medium mb-1;
+    @apply text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1;
   }
 
   .ot-badge-live {
-    @apply text-[10px] font-bold text-slate-500 uppercase tracking-widest bg-slate-800/80 px-2 py-1 rounded-md border border-slate-700/50;
+    @apply text-[9px] font-bold text-tactical-cyan uppercase tracking-widest bg-tactical-cyan/10 px-2 py-0.5 rounded border border-tactical-cyan/30 animate-pulse;
   }
 
   /* Button & Action Components */
   .ot-btn-primary {
-    @apply bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-semibold transition-all shadow-lg shadow-blue-600/20 active:scale-95;
+    @apply bg-tactical-cyan/10 hover:bg-tactical-cyan/20 text-tactical-cyan border border-tactical-cyan/50 px-5 py-2 rounded font-mono text-sm font-bold transition-all active:scale-95 uppercase tracking-wide;
   }
 
   .ot-btn-secondary {
-    @apply bg-slate-800 hover:bg-slate-700 text-slate-300 px-6 py-2.5 rounded-xl font-medium transition-all;
+    @apply bg-tactical-surface hover:bg-slate-800 text-slate-300 border border-tactical-border px-5 py-2 rounded font-mono text-sm transition-all uppercase tracking-wide;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-600;
+    @apply bg-tactical-border;
   }
 
   @media print {
@@ -115,24 +115,29 @@
 
   /* Sidebar Components */
   .ot-sidebar {
-    @apply fixed left-0 top-0 h-screen w-64 bg-[#0f172a] border-r border-slate-800/50 flex flex-col z-50;
+    @apply fixed left-0 top-0 h-screen w-16 bg-tactical-surface border-r border-tactical-border flex flex-col z-50 items-center py-4;
   }
 
   .ot-nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium;
+    @apply flex items-center justify-center w-10 h-10 rounded-md transition-all duration-150 relative;
   }
 
   .ot-nav-link-active {
-    @apply bg-blue-600 text-white shadow-lg shadow-blue-600/30;
+    @apply bg-tactical-cyan/10 text-tactical-cyan border border-tactical-cyan/30;
   }
 
   .ot-nav-link-inactive {
-    @apply text-slate-400 hover:bg-slate-800/50 hover:text-white;
+    @apply text-slate-500 hover:bg-slate-800/50 hover:text-slate-300 border border-transparent;
+  }
+
+  /* Tooltip for slim sidebar */
+  .ot-nav-tooltip {
+    @apply absolute left-14 bg-tactical-surface border border-tactical-border text-xs font-mono font-bold uppercase tracking-wider px-2 py-1 rounded text-white opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50;
   }
 
   /* Table Components */
   .ot-table-container {
-    @apply bg-[#1e293b]/50 backdrop-blur-md border border-slate-800 rounded-3xl overflow-hidden shadow-xl;
+    @apply bg-tactical-surface border border-tactical-border rounded-md overflow-hidden;
   }
 
   .ot-table {
@@ -140,24 +145,28 @@
   }
 
   .ot-table-header {
-    @apply bg-slate-800/30 text-slate-400 text-[11px] font-bold uppercase tracking-[0.15em] border-b border-slate-700/50;
+    @apply bg-tactical-bg text-slate-400 text-[10px] font-mono font-bold uppercase tracking-widest border-b border-tactical-border py-3 px-4;
   }
 
   .ot-table-row {
-    @apply border-b border-slate-700/30 last:border-0 hover:bg-slate-800/20 transition-colors;
+    @apply border-b border-tactical-border last:border-0 hover:bg-slate-800/40 transition-colors;
+  }
+  
+  .ot-table-cell {
+    @apply py-3 px-4 text-sm font-sans;
   }
 
   /* Status Badges */
   .ot-status-badge {
-    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border;
+    @apply inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border font-mono;
   }
 
   .ot-status-active {
-    @apply text-emerald-400 bg-emerald-400/10 border-emerald-400/20;
+    @apply text-tactical-cyan bg-tactical-cyan/10 border-tactical-cyan/20;
   }
 
   .ot-status-maintenance {
-    @apply text-amber-400 bg-amber-400/10 border-amber-400/20;
+    @apply text-tactical-amber bg-tactical-amber/10 border-tactical-amber/20;
   }
 
   .ot-status-inactive {

@@ -1,22 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { Truck, Activity, Users, AlertCircle } from 'lucide-react';
+import StatCard from '../components/StatCard';
+import { Truck, Activity, Users, AlertCircle, MapPin, FileText } from 'lucide-react';
 import api from '../api/axios';
 import { cachedFetch } from '../utils/cache';
-
-const StatCard = ({ icon, label, value, color }) => (
-    <div className="ot-stat-card group">
-        <div className="flex items-center justify-between mb-4">
-            <div className={`ot-stat-icon-container ${color} bg-opacity-10 group-hover:scale-110`}>
-                {React.cloneElement(icon, { className: color.replace('bg-', 'text-') })}
-            </div>
-            <span className="ot-badge-live">Live</span>
-        </div>
-        <h3 className="ot-stat-label">{label}</h3>
-        <p className="ot-stat-value">{value}</p>
-    </div>
-);
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -64,84 +52,96 @@ const Dashboard = () => {
         <div className="flex">
             <Sidebar />
 
-            <main className="ot-page-container">
-                <header className="ot-header">
-                    <h1 className="ot-title">Fleet Overview</h1>
-                    <p className="ot-subtitle">Real-time monitoring of your connected assets</p>
+            <main className="ot-page-container w-full">
+                <header className="ot-header flex justify-between items-end">
+                    <div>
+                        <h1 className="ot-title">Overview</h1>
+                        <p className="ot-subtitle">Real-Time Fleet Status</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mb-1">System Status</p>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-tactical-cyan rounded-full animate-pulse shadow-[0_0_8px_#00F0FF]"></span>
+                            <span className="text-xs text-white font-mono uppercase tracking-wider">Online & Syncing</span>
+                        </div>
+                    </div>
                 </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                     <StatCard
-                        icon={<Truck />}
+                        icon={<Truck size={24} />}
                         label="Total Vehicles"
-                        value={loading ? "..." : stats.vehicles.toString()}
-                        color="bg-blue-500"
+                        value={stats.vehicles}
+                        loading={loading}
+                        pulseColor="bg-slate-400"
                     />
                     <StatCard
-                        icon={<Activity />}
+                        icon={<Activity size={24} />}
                         label="Active Now"
-                        value={loading ? "..." : stats.active.toString()}
-                        color="bg-green-500"
+                        value={stats.active}
+                        loading={loading}
+                        pulseColor="bg-tactical-cyan"
                     />
                     <StatCard
-                        icon={<Users />}
-                        label="Registered Drivers"
-                        value={loading ? "..." : stats.drivers.toString()}
-                        color="bg-indigo-500"
+                        icon={<Users size={24} />}
+                        label="Total Drivers"
+                        value={stats.drivers}
+                        loading={loading}
+                        pulseColor="bg-indigo-400"
                     />
                     <StatCard
-                        icon={<AlertCircle />}
-                        label="Maintenance Alert"
-                        value={loading ? "..." : stats.issues.toString()}
-                        color="bg-red-500"
+                        icon={<AlertCircle size={24} />}
+                        label="Needs Maintenance"
+                        value={stats.issues}
+                        loading={loading}
+                        pulseColor="bg-tactical-amber"
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-                    <div className="lg:col-span-2 ot-card min-h-[400px] flex flex-col justify-between group">
-                        <div className="flex justify-between items-center mb-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div className="lg:col-span-2 ot-card min-h-[350px] flex flex-col justify-between relative overflow-hidden group">
+                        {/* Radar/Grid Background Pattern */}
+                        <div className="absolute inset-0 opacity-5 pointer-events-none bg-[linear-gradient(#00F0FF_1px,transparent_1px),linear-gradient(90deg,#00F0FF_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+                        
+                        <div className="flex justify-between items-start mb-6 relative z-10">
                             <div>
-                                <h3 className="text-white font-bold text-lg">Telemetry Activity</h3>
-                                <p className="text-slate-500 text-sm">Real-time data stream from IoT devices</p>
-                            </div>
-                            <div className="flex gap-2 items-center">
-                                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-lg shadow-green-500/50"></span>
-                                <span className="text-[10px] text-green-500 font-bold uppercase tracking-widest">System Online</span>
+                                <h3 className="text-white font-display font-bold text-lg">Live Map</h3>
+                                <p className="text-slate-500 text-sm">Tracking vehicles on the road</p>
                             </div>
                         </div>
-                        <div className="flex-1 flex items-center justify-center">
-                            <div className="text-center">
-                                <Activity className="h-12 w-12 text-slate-700 mx-auto mb-4 group-hover:text-blue-500 transition-colors duration-500" />
-                                <p className="text-slate-500 font-medium">Simulation Engine Active</p>
-                                <p className="text-slate-600 text-sm">Data packets will begin streaming shortly</p>
-                            </div>
+                        
+                        <div className="flex-1 flex flex-col items-center justify-center relative z-10">
+                            <MapPin className="h-12 w-12 text-tactical-cyan/40 mb-4 animate-bounce" />
+                            <p className="text-tactical-cyan font-mono text-sm uppercase tracking-widest mb-1">Connecting to Vehicles...</p>
+                            <p className="text-slate-500 text-xs">Map data will appear here during active trips.</p>
                         </div>
                     </div>
 
                     <div className="ot-card flex flex-col">
-                        <h3 className="text-white font-bold text-lg mb-6">Quick Actions</h3>
+                        <h3 className="text-white font-display font-bold text-lg mb-6">Quick Tasks</h3>
                         <div className="space-y-3">
                             <button 
                                 onClick={() => navigate('/fleet')}
-                                className="ot-btn-primary w-full"
+                                className="ot-btn-primary w-full flex items-center justify-center gap-2"
                             >
-                                Register New Asset
+                                <Truck size={16} /> Add Vehicle
                             </button>
                             <button 
                                 onClick={() => navigate('/safety')}
-                                className="ot-btn-secondary w-full"
+                                className="ot-btn-secondary w-full flex items-center justify-center gap-2"
                             >
-                                Generate Safety Report
+                                <FileText size={16} /> Driver Safety
                             </button>
                             <button 
                                 onClick={() => navigate('/tracking')}
-                                className="ot-btn-secondary w-full"
+                                className="ot-btn-secondary w-full flex items-center justify-center gap-2"
                             >
-                                View Fleet Map
+                                <MapPin size={16} /> View Map
                             </button>
                         </div>
-                        <div className="mt-auto pt-6 border-t border-slate-800/50 text-center">
-                            <p className="text-[10px] text-slate-600 uppercase tracking-widest font-bold">Foundation v1.0</p>
+                        <div className="mt-auto pt-6 text-center">
+                            <div className="h-[1px] w-full bg-tactical-border mb-4"></div>
+                            <p className="text-[10px] text-slate-600 uppercase tracking-widest font-mono font-bold">OptiTrack Hub v2.0</p>
                         </div>
                     </div>
                 </div>
